@@ -1,0 +1,4 @@
+allowBuilds:
+  vue-demi: true
+minimumReleaseAgeExclude:
+  - '@vitest/eslint-plugin@1.6.25'

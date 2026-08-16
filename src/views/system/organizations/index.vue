@@ -230,7 +230,7 @@ async function handleDelete(id: string) {
     showSuccess('删除成功')
     // 若删除的是当前选中的部门，清除选中状态避免用不存在的 ID 筛选
     if (searchOrgId.value === id) {
-      searchOrgId.value = undefined
+      searchOrgId.value = ''
     }
     fetchOrganizations()
   } catch {

@@ -47,13 +47,15 @@ const LINK_TYPE_COLOR_MAP: Record<string, string> = LINK_TYPE_OPTIONS.reduce(
 )
 
 /** 获取链接类型中文标签 */
-export function getLinkTypeLabel(value: string | undefined): string {
+export function getLinkTypeLabel(value: string | number | undefined): string {
   if (!value) return '-'
-  return LINK_TYPE_LABEL_MAP[value] || value
+  const key = String(value)
+  return LINK_TYPE_LABEL_MAP[key] || key
 }
 
 /** 获取链接类型标签样式 */
-export function getLinkTypeColor(value: string | undefined): string {
+export function getLinkTypeColor(value: string | number | undefined): string {
   if (!value) return 'bg-secondary text-secondary-foreground'
-  return LINK_TYPE_COLOR_MAP[value] || 'bg-secondary text-secondary-foreground'
+  const key = String(value)
+  return LINK_TYPE_COLOR_MAP[key] || 'bg-secondary text-secondary-foreground'
 }

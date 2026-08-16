@@ -805,6 +805,8 @@ export const pageModelApi = {
     modelType?: string
     enabled?: boolean
     status?: number
+    pageNumber?: number
+    pageSize?: number
   }) => {
     return useRequest<PageResult<PageModel>>(`/page/models/page${buildQuery(params)}`).json()
   },

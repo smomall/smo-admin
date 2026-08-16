@@ -103,6 +103,7 @@ async function loadCursorList(reset = true) {
           nextPublishAt: string | null
           hasMore: boolean
         }
+      | null
       | undefined
     switch (props.linkType) {
       case LINK_TYPE.TAG: {
@@ -265,7 +266,7 @@ const cursorIcon = computed(() => {
     v-if="linkType === LINK_TYPE.URL"
     :model-value="modelValue"
     placeholder="请输入链接地址，如 https://example.com"
-    @update:model-value="(val: string) => emit('update:modelValue', val)"
+    @update:model-value="(val: string | number) => emit('update:modelValue', String(val))"
   />
 
   <!-- 分类 / 页面：树形下拉（客户端过滤） -->

@@ -83,7 +83,10 @@ const basicForm = ref({
   remark: '',
 })
 
-const profileForm = ref<UserProfile>({
+const profileForm = ref<Omit<UserProfile, 'emailVerified' | 'phoneNumberVerified'> & {
+  emailVerified: string
+  phoneNumberVerified: string
+}>({
   userId: '',
   subject: '',
   fullName: '',
@@ -344,7 +347,12 @@ async function handleSubmit() {
 
     if (isEdit.value) {
       await userApi.update(basicForm.value.id, userPayload)
-      await userApi.updateProfile(basicForm.value.id, profileForm.value)
+      const profilePayload: UserProfile = {
+        ...profileForm.value,
+        emailVerified: profileForm.value.emailVerified === '1',
+        phoneNumberVerified: profileForm.value.phoneNumberVerified === '1',
+      }
+      await userApi.updateProfile(basicForm.value.id, profilePayload)
       await userApi.updateAddress(basicForm.value.id, addressForm.value)
     } else {
       await userApi.create({ ...userPayload, id: undefined, password: '' })

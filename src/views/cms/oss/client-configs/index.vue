@@ -130,8 +130,8 @@ function handleEdit(config: OssClientConfig) {
     presignUploadExpire: config.presignUploadExpire || 'PT10M',
     presignDownloadExpire: config.presignDownloadExpire || 'PT10M',
     forcePathStyle: config.forcePathStyle || false,
-    isDefault: config.isDefault || '0',
-    isPublic: config.isPublic || '0',
+    isDefault: String(config.isDefault ?? 0),
+    isPublic: String(config.isPublic ?? 0),
     status: String(config.status || 1),
     remark: config.remark || '',
   }
@@ -160,10 +160,15 @@ async function handleSubmit() {
     return
   }
   try {
+    const payload = {
+      ...formData.value,
+      isDefault: Number(formData.value.isDefault),
+      isPublic: Number(formData.value.isPublic),
+    }
     if (isEdit.value) {
-      await ossClientConfigApi.update(formData.value.id, formData.value)
+      await ossClientConfigApi.update(formData.value.id, payload)
     } else {
-      await ossClientConfigApi.create(formData.value)
+      await ossClientConfigApi.create(payload)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false
@@ -248,7 +253,7 @@ async function handleSubmit() {
             <TableCell class="max-w-[200px] truncate">{{ config.endpoint }}</TableCell>
             <TableCell>{{ config.region || '-' }}</TableCell>
             <TableCell>
-              <Checkbox :model-value="config.isDefault === '1'" disabled />
+              <Checkbox :model-value="config.isDefault === 1" disabled />
             </TableCell>
             <TableCell>
               <span
@@ -354,7 +359,7 @@ async function handleSubmit() {
             <Label>强制路径风格</Label>
             <Checkbox
               :model-value="formData.forcePathStyle === true"
-              @update:model-value="formData.forcePathStyle = $event"
+              @update:model-value="formData.forcePathStyle = Boolean($event)"
             />
           </div>
           <div class="space-y-2 flex items-center gap-4">

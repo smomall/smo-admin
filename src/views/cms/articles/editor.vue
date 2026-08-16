@@ -156,9 +156,11 @@ async function handleSave() {
         title: submitData.title,
       })
       if (listData.value?.records?.length) {
-        const newId = listData.value.records[0].id
-        router.replace({ path: '/articles/editor', query: { siteId: siteId.value, id: newId } })
-        formData.value.id = newId
+        const newId = listData.value.records[0]?.id
+        if (newId) {
+          router.replace({ path: '/articles/editor', query: { siteId: siteId.value, id: newId } })
+          formData.value.id = newId
+        }
       }
     }
   } catch {

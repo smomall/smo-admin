@@ -56,6 +56,7 @@ const {
   currentPage,
   pageSize,
   total,
+  isEmpty,
   goto,
   search: handleSearch,
   reloadAfterRemove,

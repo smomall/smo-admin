@@ -192,10 +192,14 @@ async function handleSubmit() {
     return
   }
   try {
+    const payload = {
+      ...formData.value,
+      type: Number(formData.value.type),
+    }
     if (isEdit.value) {
-      await permissionApi.update(formData.value.id, formData.value)
+      await permissionApi.update(formData.value.id, payload)
     } else {
-      await permissionApi.create(formData.value)
+      await permissionApi.create(payload)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

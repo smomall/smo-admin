@@ -367,12 +367,18 @@ async function handleSubmit() {
     return
   }
   try {
+    const payload = {
+      ...formData.value,
+      type: Number(formData.value.type),
+      dataScope: Number(formData.value.dataScope),
+    }
     if (isEdit.value) {
-      await roleApi.update(formData.value.id, formData.value)
+      await roleApi.update(formData.value.id, payload)
     } else {
-      const { data } = await roleApi.create(formData.value)
+      const { data } = await roleApi.create(payload)
       if (data.value) {
-        formData.value.id = data.value.id || data.value
+        const result = data.value as { id?: string } | string
+        formData.value.id = typeof result === 'string' ? result : (result.id ?? '')
       }
     }
 
@@ -621,7 +627,7 @@ async function handleSavePermissions() {
             </TableCell>
             <TableCell>{{ role.code }}</TableCell>
             <TableCell>{{ getRoleTypeLabel(role.type) }}</TableCell>
-            <TableCell>{{ getDataScopeLabel(role.dataScope) }}</TableCell>
+            <TableCell>{{ getDataScopeLabel(role.dataScope ?? 0) }}</TableCell>
             <TableCell>{{ role.description || '-' }}</TableCell>
             <TableCell>
               <span
@@ -706,8 +712,8 @@ async function handleSavePermissions() {
               :model-value="formData.dataScope"
               @update:model-value="
                 (val) => {
-                  formData.dataScope = val
-                  if (val !== '2') {
+                  formData.dataScope = String(val)
+                  if (String(val) !== '2') {
                     selectedOrgIds = new Set()
                   }
                 }

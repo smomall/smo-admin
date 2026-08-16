@@ -36,6 +36,7 @@ import { ossBucketApi, ossClientConfigApi } from '@/api'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useDict } from '@/composables/useDict'
+import { usePagedList } from '@/composables/usePagedList'
 import DictSelect from '@/components/DictSelect.vue'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
@@ -124,8 +125,8 @@ function handleEdit(bucket: OssBucket) {
     configId: bucket.configId,
     bucketName: bucket.bucketName || '',
     basePath: bucket.basePath || '',
-    isDefault: bucket.isDefault || '0',
-    isPublic: bucket.isPublic || '0',
+    isDefault: String(bucket.isDefault ?? 0),
+    isPublic: String(bucket.isPublic ?? 0),
     status: String(bucket.status || 1),
     remark: bucket.remark || '',
   }
@@ -154,10 +155,15 @@ async function handleSubmit() {
     return
   }
   try {
+    const payload = {
+      ...formData.value,
+      isDefault: Number(formData.value.isDefault),
+      isPublic: Number(formData.value.isPublic),
+    }
     if (isEdit.value) {
-      await ossBucketApi.update(formData.value.id, formData.value)
+      await ossBucketApi.update(formData.value.id, payload)
     } else {
-      await ossBucketApi.create(formData.value)
+      await ossBucketApi.create(payload)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false
@@ -249,7 +255,7 @@ function getConfigName(configId: string) {
             <TableCell>{{ getConfigName(bucket.configId) }}</TableCell>
             <TableCell class="max-w-[200px] truncate">{{ bucket.basePath || '-' }}</TableCell>
             <TableCell>
-              <Checkbox :model-value="bucket.isDefault === '1'" disabled />
+              <Checkbox :model-value="bucket.isDefault === 1" disabled />
             </TableCell>
             <TableCell>
               <span

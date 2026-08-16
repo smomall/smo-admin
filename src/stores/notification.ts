@@ -64,6 +64,7 @@ export const useNotificationStore = defineStore('notification', () => {
                 totalRow: Number(data.value.totalRow) || 0,
                 pageNumber: data.value.pageNumber ?? query.pageNumber,
                 pageSize: data.value.pageSize ?? query.pageSize,
+                totalPage: Math.ceil((Number(data.value.totalRow) || 0) / (data.value.pageSize ?? query.pageSize)),
               }
             : null,
         },
@@ -95,6 +96,7 @@ export const useNotificationStore = defineStore('notification', () => {
                 totalRow: Number(data.value.totalRow) || 0,
                 pageNumber: data.value.pageNumber ?? query.pageNumber,
                 pageSize: data.value.pageSize ?? query.pageSize,
+                totalPage: Math.ceil((Number(data.value.totalRow) || 0) / (data.value.pageSize ?? query.pageSize)),
               }
             : null,
         },

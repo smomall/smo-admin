@@ -123,11 +123,11 @@ const filteredUnreadCount = computed(() => {
 const hasRecords = computed(() => currentList.value.length > 0)
 
 // ============== 当前 Tab 调对应的分页接口 ==============
-function fetchCurrentPage(page?: number) {
+function fetchCurrentPage(page?: number): Promise<void> {
   if (selectedType.value === 'announcement') {
-    return notificationStore.fetchAnnouncementsPage(page)
+    return notificationStore.fetchAnnouncementsPage(page) ?? Promise.resolve()
   } else {
-    return notificationStore.fetchNoticesPage(page)
+    return notificationStore.fetchNoticesPage(page) ?? Promise.resolve()
   }
 }
 

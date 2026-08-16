@@ -82,9 +82,9 @@ async function fetchNotices() {
       pageNumber: page.value,
       pageSize: pageSize.value,
       title: searchTitle.value,
-      type: searchType.value !== 'all' ? Number(searchType.value) : null,
-      importance: searchImportance.value !== 'all' ? Number(searchImportance.value) : null,
-      status: searchStatus.value === '__all__' ? null : Number(searchStatus.value),
+      type: searchType.value !== 'all' ? Number(searchType.value) : undefined,
+      importance: searchImportance.value !== 'all' ? Number(searchImportance.value) : undefined,
+      status: searchStatus.value === '__all__' ? undefined : Number(searchStatus.value),
     })
     if (data.value) {
       notices.value = data.value.records
@@ -189,6 +189,7 @@ async function handleSubmit() {
   try {
     const submitData = {
       ...formData.value,
+      importance: Number(formData.value.importance),
       publishAt: formData.value.timingPublish ? convertDateTime(formData.value.publishAt) : '',
       expireAt: formData.value.timingPublish ? convertDateTime(formData.value.expireAt) : '',
     }
@@ -273,7 +274,7 @@ async function handleSubmit() {
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium"
                 :class="
-                  notice.type === 1 ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                  notice.type === '1' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
                 "
               >
                 {{ getTypeName(String(notice.type)) }}

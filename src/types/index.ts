@@ -320,10 +320,9 @@ export interface LoginLog {
 export interface Article {
   id: string
   siteId?: string
+  categoryId?: string
   categoryIds?: string[]
   tagNames?: string[]
-  authorId?: string
-  slug?: string
   cover?: string
   title: string
   description?: string
@@ -339,7 +338,6 @@ export interface Article {
   publishAt?: string
   sourceType?: number
   sourceUrl?: string
-  accessType?: number
   seoTitle?: string
   seoKeywords?: string
   seoDescription?: string
@@ -427,8 +425,8 @@ export interface Note {
   id: string
   siteId?: string
   categoryId?: string
-  tagIds?: string[]
-  authorId?: string
+  categoryIds?: string[]
+  tagNames?: string[]
   cover?: string
   title: string
   description?: string
@@ -566,7 +564,6 @@ export interface NavItem {
 export interface Site {
   id: string
   title: string
-  slug?: string
   keywords?: string
   description?: string
   domain?: string

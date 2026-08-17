@@ -2,12 +2,14 @@
 import { ref, computed, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Plus, X } from '@lucide/vue'
 import { tagApi } from '@/api'
 
 const props = defineProps<{
   modelValue: string[]
+  siteId?: string
 }>()
 
 const emit = defineEmits<{
@@ -27,7 +29,7 @@ const canAddMore = computed(() => selectedTags.value.length < MAX_TAGS)
 async function fetchTags() {
   loading.value = true
   try {
-    const { data } = await tagApi.getAll()
+    const { data } = await tagApi.getAll(props.siteId)
     if (data.value) {
       allTags.value = data.value
     }
@@ -114,7 +116,7 @@ watch(popoverOpen, (v) => {
       </div>
 
       <!-- 添加标签按钮 -->
-      <Popover v-if="canAddMore" v-model:open="popoverOpen" @update:open-change="handleOpenChange">
+      <Popover v-if="canAddMore" v-model:open="popoverOpen" @update:open="handleOpenChange">
         <PopoverTrigger as-child>
           <Button variant="outline" size="sm" class="shrink-0">
             <Plus class="w-4 h-4 mr-1" />

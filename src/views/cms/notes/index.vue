@@ -40,6 +40,8 @@ import { useDict } from '@/composables/useDict'
 import { useSiteStore } from '@/stores/site'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import CategoryTree from '@/components/CategoryTree.vue'
+import CategorySelector from '@/components/CategorySelector.vue'
+import TagSelector from '@/components/TagSelector.vue'
 import DictSelect from '@/components/DictSelect.vue'
 import CoverInput from '@/components/CoverInput.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -94,12 +96,13 @@ const selectedNote = ref<Note | null>(null)
 const showNoteDialog = ref(false)
 const isNoteEdit = ref(false)
 const noteDialogTab = ref('info')
+const selectedCategoryIds = ref<string[]>([])
+const selectedTagNames = ref<string[]>([])
 const noteForm = ref({
   id: '',
   title: '',
   description: '',
   categoryId: '__none__',
-  authorId: '',
   cover: '',
   status: '0',
   publishAt: '',
@@ -445,15 +448,33 @@ function handleAddNote() {
     title: '',
     description: '',
     categoryId: selectedCategoryId.value || '__none__',
-    authorId: '',
     cover: '',
     status: '0',
     publishAt: '',
   }
+  selectedCategoryIds.value = []
+  selectedTagNames.value = []
   activeChapterId.value = ''
   chapters.value = []
   selectedNote.value = null
   showNoteDialog.value = true
+}
+
+async function fetchNoteRelations(id: string) {
+  try {
+    const [tagsRes, catsRes] = await Promise.all([
+      noteApi.listTags(id),
+      noteApi.listCategories(id),
+    ])
+    if (tagsRes.data.value) {
+      selectedTagNames.value = tagsRes.data.value.map((t) => t.title)
+    }
+    if (catsRes.data.value) {
+      selectedCategoryIds.value = catsRes.data.value.map((c) => c.id)
+    }
+  } catch {
+    // useRequest 已统一处理错误提示
+  }
 }
 
 async function handleEditNote(note: Note) {
@@ -464,14 +485,16 @@ async function handleEditNote(note: Note) {
     title: note.title,
     description: note.description || '',
     categoryId: note.categoryId || '__none__',
-    authorId: note.authorId || '',
     cover: note.cover || '',
     status: String(note.status || '0'),
     publishAt: note.publishAt ? note.publishAt.substring(0, 10) : '',
   }
+  selectedCategoryIds.value = []
+  selectedTagNames.value = []
   selectedNote.value = note
   activeChapterId.value = ''
   await fetchChapters(note.id)
+  fetchNoteRelations(note.id)
   showNoteDialog.value = true
 }
 
@@ -502,11 +525,12 @@ async function handleSubmitNote() {
     title: noteForm.value.title,
     description: noteForm.value.description,
     categoryId: noteForm.value.categoryId === '__none__' ? '' : noteForm.value.categoryId,
-    authorId: noteForm.value.authorId,
     cover: noteForm.value.cover,
     status: noteForm.value.status,
     publishAt: noteForm.value.publishAt,
     siteId: siteId.value,
+    categoryIds: selectedCategoryIds.value,
+    tagNames: selectedTagNames.value,
   }
   try {
     if (isNoteEdit.value) {
@@ -911,15 +935,17 @@ onMounted(() => {
                 <DictSelect v-model="noteForm.status" :dict-items="noteStatusItems" />
               </div>
               <div class="space-y-2">
-                <Label>作者ID</Label>
-                <Input v-model="noteForm.authorId" placeholder="作者ID" />
-              </div>
-              <div class="space-y-2">
                 <Label>发布时间</Label>
                 <Input v-model="noteForm.publishAt" type="date" />
               </div>
               <div class="space-y-2 col-span-2">
                 <CoverInput v-model="noteForm.cover" />
+              </div>
+              <div class="col-span-2">
+                <CategorySelector v-model="selectedCategoryIds" :site-id="siteId" />
+              </div>
+              <div class="col-span-2">
+                <TagSelector v-model="selectedTagNames" :site-id="siteId" />
               </div>
             </div>
           </TabsContent>

@@ -15,8 +15,16 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { ArrowLeft, Save, Settings } from '@lucide/vue'
-import { articleApi } from '@/api'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ArrowLeft, Save } from '@lucide/vue'
+import { articleApi, categoryApi } from '@/api'
+import type { Category } from '@/types'
 import TagSelector from '@/components/TagSelector.vue'
 import CategorySelector from '@/components/CategorySelector.vue'
 import { useDict } from '@/composables/useDict'
@@ -50,15 +58,55 @@ const saving = ref(false)
 
 const siteId = computed(() => (route.query.siteId as string) || siteStore.currentSite?.id || '')
 
+const categoryTree = ref<Category[]>([])
+
+const flatCategoryOptions = computed(() => {
+  const result: (Category & { indent: number })[] = []
+  function flatten(list: Category[], level: number) {
+    for (const cat of list) {
+      result.push({ ...cat, indent: level })
+      if (cat.children?.length) {
+        flatten(cat.children, level + 1)
+      }
+    }
+  }
+  flatten(categoryTree.value, 0)
+  return result
+})
+
+async function fetchCategoryTree() {
+  try {
+    const { data } = await categoryApi.tree(siteId.value)
+    if (data.value) {
+      categoryTree.value = data.value
+    }
+  } catch {
+    // useRequest 已统一处理
+  }
+}
+
+onMounted(async () => {
+  await fetchArticleStatus()
+  if (articleId.value) {
+    await fetchArticle(articleId.value)
+    fetchRelations(articleId.value)
+  }
+})
+
 const formData = ref({
   id: '',
   title: '',
-  slug: '',
+  categoryId: '__none__',
   description: '',
   content: '',
   contentType: '',
   cover: '',
   status: '0',
+  viewCount: 0,
+  likeCount: 0,
+  commentCount: 0,
+  rating: 0,
+  heatScore: 0,
   allowComment: true,
   seoTitle: '',
   seoKeywords: '',
@@ -74,12 +122,17 @@ async function fetchArticle(id: string) {
       formData.value = {
         id: article.id,
         title: article.title,
-        slug: article.slug || '',
+        categoryId: article.categoryId || '__none__',
         description: article.description || '',
         content: article.content || '',
         contentType: article.contentType || '',
         cover: article.cover || '',
         status: article.status ?? '0',
+        viewCount: article.viewCount ?? 0,
+        likeCount: article.likeCount ?? 0,
+        commentCount: article.commentCount ?? 0,
+        rating: article.rating ?? 0,
+        heatScore: article.heatScore ?? 0,
         allowComment: article.allowComment ?? true,
         seoTitle: article.seoTitle || '',
         seoKeywords: article.seoKeywords || '',
@@ -110,26 +163,6 @@ async function fetchRelations(id: string) {
   }
 }
 
-async function handleSaveTags() {
-  if (!formData.value.id) {
-    showError('请先保存文章')
-    return
-  }
-  saving.value = true
-  try {
-    await articleApi.update(formData.value.id, {
-      categoryIds: selectedCategoryIds.value,
-      tagNames: selectedTagNames.value,
-    })
-    showSuccess('保存成功')
-    showSettingsDialog.value = false
-  } catch {
-    // useRequest 已统一处理错误提示，不重复弹窗
-  } finally {
-    saving.value = false
-  }
-}
-
 async function handleSave() {
   if (!formData.value.title) {
     showError('请填写文章标题')
@@ -138,6 +171,7 @@ async function handleSave() {
   saving.value = true
   const submitData = {
     ...formData.value,
+    categoryId: formData.value.categoryId === '__none__' ? '' : formData.value.categoryId,
     siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,
@@ -149,6 +183,7 @@ async function handleSave() {
       await articleApi.create(submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
+    showSettingsDialog.value = false
     if (!isEdit.value && submitData.title) {
       const { data: listData } = await articleApi.list({
         pageNumber: 1,
@@ -170,6 +205,15 @@ async function handleSave() {
   }
 }
 
+function handleOpenSaveDialog() {
+  if (!formData.value.title) {
+    showError('请填写文章标题')
+    return
+  }
+  showSettingsDialog.value = true
+  fetchCategoryTree()
+}
+
 function handleBack() {
   const currentTab = tabStore.activeTab
   if (currentTab) {
@@ -177,14 +221,6 @@ function handleBack() {
   }
   router.push({ path: '/cms/articles', query: { siteId: siteId.value } })
 }
-
-onMounted(async () => {
-  await fetchArticleStatus()
-  if (articleId.value) {
-    await fetchArticle(articleId.value)
-    fetchRelations(articleId.value)
-  }
-})
 </script>
 
 <template>
@@ -201,11 +237,7 @@ onMounted(async () => {
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <Button variant="outline" size="sm" @click="showSettingsDialog = true">
-          <Settings class="w-4 h-4 mr-1" />
-          设置
-        </Button>
-        <Button size="sm" :disabled="saving" @click="handleSave">
+        <Button size="sm" :disabled="saving" @click="handleOpenSaveDialog">
           <Save class="w-4 h-4 mr-1" />
           {{ saving ? '保存中...' : '保存' }}
         </Button>
@@ -236,8 +268,22 @@ onMounted(async () => {
 
         <div class="grid grid-cols-2 gap-4 py-4">
           <div class="space-y-2">
-            <Label for="slug">Slug</Label>
-            <Input id="slug" v-model="formData.slug" placeholder="URL标识" />
+            <Label for="categoryId">所属分类</Label>
+            <Select id="categoryId" v-model="formData.categoryId">
+              <SelectTrigger>
+                <SelectValue placeholder="选择分类" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">
+                  <span class="text-muted-foreground">不选择</span>
+                </SelectItem>
+                <SelectItem v-for="cat in flatCategoryOptions" :key="cat.id" :value="cat.id">
+                  <span :style="{ paddingLeft: cat.indent * 16 + 'px' }">
+                    {{ cat.title }}
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div class="space-y-2">
             <Label for="contentType">内容类型</Label>
@@ -252,7 +298,7 @@ onMounted(async () => {
             <CategorySelector v-model="selectedCategoryIds" :site-id="siteId" />
           </div>
           <div class="col-span-2">
-            <TagSelector v-model="selectedTagNames" />
+            <TagSelector v-model="selectedTagNames" :site-id="siteId" />
           </div>
           <div class="space-y-2 col-span-2">
             <Label for="description">摘要</Label>
@@ -269,6 +315,62 @@ onMounted(async () => {
           <div class="space-y-2">
             <Label for="status">状态</Label>
             <DictSelect v-model="formData.status" :dict-items="articleStatusItems" />
+          </div>
+          <div class="space-y-2 col-span-2">
+            <Label>统计数据</Label>
+            <div class="grid grid-cols-5 gap-3">
+              <div class="space-y-1">
+                <Label for="viewCount" class="text-xs text-muted-foreground">浏览量</Label>
+                <Input
+                  id="viewCount"
+                  v-model="formData.viewCount"
+                  type="number"
+                  class="h-8"
+                  placeholder="浏览量"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="likeCount" class="text-xs text-muted-foreground">点赞数</Label>
+                <Input
+                  id="likeCount"
+                  v-model="formData.likeCount"
+                  type="number"
+                  class="h-8"
+                  placeholder="点赞数"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="commentCount" class="text-xs text-muted-foreground">评论数</Label>
+                <Input
+                  id="commentCount"
+                  v-model="formData.commentCount"
+                  type="number"
+                  class="h-8"
+                  placeholder="评论数"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="rating" class="text-xs text-muted-foreground">评分</Label>
+                <Input
+                  id="rating"
+                  v-model="formData.rating"
+                  type="number"
+                  step="0.1"
+                  class="h-8"
+                  placeholder="评分"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="heatScore" class="text-xs text-muted-foreground">热度</Label>
+                <Input
+                  id="heatScore"
+                  v-model="formData.heatScore"
+                  type="number"
+                  class="h-8"
+                  placeholder="热度"
+                />
+              </div>
+            </div>
           </div>
           <div class="space-y-2 col-span-2">
             <Label>选项</Label>
@@ -295,9 +397,9 @@ onMounted(async () => {
 
         <DialogFooter>
           <Button variant="outline" @click="showSettingsDialog = false">取消</Button>
-          <Button @click="handleSaveTags" :disabled="saving">
+          <Button @click="handleSave" :disabled="saving">
             <Save class="w-4 h-4 mr-1" />
-            {{ saving ? '保存中...' : '保存设置' }}
+            {{ saving ? '保存中...' : '保存文章' }}
           </Button>
         </DialogFooter>
       </DialogContent>

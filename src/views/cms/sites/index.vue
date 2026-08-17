@@ -41,7 +41,6 @@ const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
 
 const searchTitle = ref('')
-const searchSlug = ref('')
 const searchDomain = ref('')
 const searchStatus = ref<string>('__all__')
 const showDialog = ref(false)
@@ -50,7 +49,6 @@ const isEdit = ref(false)
 const formData = ref({
   id: '',
   title: '',
-  slug: '',
   domain: '',
   keywords: '',
   description: '',
@@ -73,7 +71,6 @@ const {
   fetcher: (query) => siteApi.list(query),
   params: () => ({
     title: searchTitle.value,
-    slug: searchSlug.value,
     domain: searchDomain.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
@@ -85,7 +82,6 @@ onMounted(() => {
 
 function handleReset() {
   searchTitle.value = ''
-  searchSlug.value = ''
   searchDomain.value = ''
   searchStatus.value = '__all__'
   handleSearch()
@@ -96,7 +92,6 @@ function handleAdd() {
   formData.value = {
     id: '',
     title: '',
-    slug: '',
     domain: '',
     keywords: '',
     description: '',
@@ -111,7 +106,6 @@ function handleEdit(site: Site) {
   formData.value = {
     id: site.id,
     title: site.title,
-    slug: site.slug || '',
     domain: site.domain || '',
     keywords: site.keywords || '',
     description: site.description || '',
@@ -171,7 +165,6 @@ async function handleSubmit() {
           class="w-36"
           @keyup.enter="handleSearch"
         />
-        <Input v-model="searchSlug" placeholder="Slug" class="w-36" @keyup.enter="handleSearch" />
         <Input
           v-model="searchDomain"
           placeholder="域名"
@@ -204,7 +197,6 @@ async function handleSubmit() {
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>站点名称</TableHead>
-            <TableHead>Slug</TableHead>
             <TableHead>域名</TableHead>
             <TableHead>关键词</TableHead>
             <TableHead>描述</TableHead>
@@ -222,7 +214,6 @@ async function handleSubmit() {
                 <span class="font-medium">{{ site.title }}</span>
               </div>
             </TableCell>
-            <TableCell>{{ site.slug || '-' }}</TableCell>
             <TableCell>
               <a
                 v-if="site.domain"
@@ -263,7 +254,7 @@ async function handleSubmit() {
             </TableCell>
           </TableRow>
           <TableRow v-if="isEmpty">
-            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="8" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -305,10 +296,6 @@ async function handleSubmit() {
           <div class="space-y-2">
             <Label for="title">站点名称 <span class="text-destructive">*</span></Label>
             <Input id="title" v-model="formData.title" placeholder="请输入站点名称" />
-          </div>
-          <div class="space-y-2">
-            <Label for="slug">Slug</Label>
-            <Input id="slug" v-model="formData.slug" placeholder="URL标识" />
           </div>
           <div class="space-y-2">
             <Label for="domain">域名</Label>

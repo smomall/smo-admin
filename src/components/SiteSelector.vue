@@ -36,7 +36,6 @@ const currentSiteId = computed(() => route.query.siteId as string)
 const showDialog = ref(false)
 const sites = ref<Site[]>([])
 const searchTitle = ref('')
-const searchSlug = ref('')
 const searchStatus = ref<string>('')
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -57,7 +56,6 @@ async function fetchSites(pageNumber = 1) {
       pageNumber,
       pageSize: pageSize.value,
       title: searchTitle.value || undefined,
-      slug: searchSlug.value || undefined,
       status: searchStatus.value !== '' ? searchStatus.value : undefined,
     })
     if (data.value) {
@@ -76,7 +74,6 @@ function handleSearch() {
 
 function handleReset() {
   searchTitle.value = ''
-  searchSlug.value = ''
   searchStatus.value = ''
   currentPage.value = 1
   fetchSites(1)
@@ -169,12 +166,6 @@ watch(
               class="w-36"
               @keyup.enter="handleSearch"
             />
-            <Input
-              v-model="searchSlug"
-              placeholder="Slug"
-              class="w-36"
-              @keyup.enter="handleSearch"
-            />
             <DictSelect
               v-model="searchStatus"
               :dict-items="siteStatusItems"
@@ -192,7 +183,6 @@ watch(
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>站点名称</TableHead>
-                <TableHead>Slug</TableHead>
                 <TableHead>URL</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>创建时间</TableHead>
@@ -209,7 +199,6 @@ watch(
               >
                 <TableCell>{{ site.id }}</TableCell>
                 <TableCell class="font-medium">{{ site.title }}</TableCell>
-                <TableCell class="text-muted-foreground">{{ site.slug || '-' }}</TableCell>
                 <TableCell class="text-muted-foreground text-sm">{{
                   site.domain || '-'
                 }}</TableCell>

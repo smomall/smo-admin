@@ -37,7 +37,6 @@ export const articleApi = {
     pageNumber?: number
     pageSize?: number
     title?: string
-    slug?: string
     categoryId?: string
     status?: string
     siteId?: string
@@ -291,8 +290,8 @@ export const tagApi = {
   },
 
   // 获取所有标签
-  getAll: () => {
-    return useRequest<Tag[]>('/tags').json()
+  getAll: (siteId?: string) => {
+    return useRequest<Tag[]>(`/tags${buildQuery({ siteId })}`).json()
   },
 
   // 获取单个标签
@@ -560,7 +559,6 @@ export const siteApi = {
     pageNumber?: number
     pageSize?: number
     title?: string
-    slug?: string
     domain?: string
     status?: string
   }) => {
@@ -1224,6 +1222,16 @@ export const noteApi = {
 
   delete: (id: string) => {
     return useRequest(`/notes/${id}`, { method: 'DELETE' }).json()
+  },
+
+  // 获取笔记标签列表
+  listTags: (id: string) => {
+    return useRequest<Tag[]>(`/notes/${id}/tags`).json()
+  },
+
+  // 获取笔记分类列表
+  listCategories: (id: string) => {
+    return useRequest<Category[]>(`/notes/${id}/categories`).json()
   },
 }
 

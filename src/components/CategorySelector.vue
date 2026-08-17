@@ -93,6 +93,18 @@ const selectedTitles = computed(() => {
 
 watch(popoverOpen, () => {})
 
+// 编辑回显：modelValue 有值但 categories 未加载时，自动加载分类树以解析标题
+// 同时监听 siteId，站点切换后重新加载
+watch(
+  () => [props.modelValue, props.siteId] as const,
+  ([ids, _siteId]) => {
+    if (ids && ids.length > 0 && categories.value.length === 0 && !loading.value) {
+      fetchCategories()
+    }
+  },
+  { immediate: true },
+)
+
 function renderNode(cat: Category, level: number, selected: string[], expanded: Set<string>): VNode {
   const hasChildren = !!(cat.children && cat.children.length > 0)
   const isExpanded = expanded.has(cat.id)
@@ -176,7 +188,7 @@ function renderNode(cat: Category, level: number, selected: string[], expanded: 
       </div>
 
       <!-- 添加分类按钮 -->
-      <Popover v-if="canAddMore" v-model:open="popoverOpen" @update:open-change="handleOpenChange">
+      <Popover v-if="canAddMore" v-model:open="popoverOpen" @update:open="handleOpenChange">
         <PopoverTrigger as-child>
           <Button variant="outline" size="sm" class="shrink-0">
             <Plus class="w-4 h-4 mr-1" />

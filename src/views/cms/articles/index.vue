@@ -49,7 +49,6 @@ const siteStore = useSiteStore()
 const siteId = computed(() => (route.query.siteId as string) || siteStore.currentSite?.id || '')
 
 const searchKeyword = ref('')
-const searchSlug = ref('')
 const searchStatus = ref<string>('__all__')
 const showTagDialog = ref(false)
 const currentArticle = ref<Article | null>(null)
@@ -70,7 +69,6 @@ const {
   fetcher: (query) => articleApi.list(query),
   params: () => ({
     title: searchKeyword.value,
-    slug: searchSlug.value,
     categoryId: selectedCategoryId.value || '',
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
     siteId: siteId.value,
@@ -84,7 +82,6 @@ function handleCategorySelect(categoryId: string | undefined) {
 
 function handleReset() {
   searchKeyword.value = ''
-  searchSlug.value = ''
   selectedCategoryId.value = undefined
   searchStatus.value = '__all__'
   handleSearch()
@@ -185,12 +182,6 @@ async function handleSaveTags() {
               class="w-36"
               @keyup.enter="handleSearch"
             />
-            <Input
-              v-model="searchSlug"
-              placeholder="别名"
-              class="w-36"
-              @keyup.enter="handleSearch"
-            />
             <DictSelect
               v-model="searchStatus"
               :dict-items="articleStatusItems"
@@ -217,10 +208,12 @@ async function handleSaveTags() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>标题</TableHead>
-                <TableHead>Slug</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>浏览</TableHead>
+                <TableHead>点赞</TableHead>
                 <TableHead>评论</TableHead>
+                <TableHead>评分</TableHead>
+                <TableHead>热度</TableHead>
                 <TableHead>创建时间</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
@@ -236,9 +229,6 @@ async function handleSaveTags() {
                     <div class="font-medium">{{ article.title }}</div>
                   </div>
                 </TableCell>
-                <TableCell class="font-mono text-xs text-muted-foreground">
-                  {{ article.slug || '-' }}
-                </TableCell>
                 <TableCell>
                   <span
                     class="px-2 py-1 rounded-full text-xs font-medium"
@@ -247,8 +237,11 @@ async function handleSaveTags() {
                     {{ getStatusLabel(article.status) }}
                   </span>
                 </TableCell>
-                <TableCell>{{ article.viewCount }}</TableCell>
-                <TableCell>{{ article.commentCount }}</TableCell>
+                <TableCell>{{ article.viewCount ?? 0 }}</TableCell>
+                <TableCell>{{ article.likeCount ?? 0 }}</TableCell>
+                <TableCell>{{ article.commentCount ?? 0 }}</TableCell>
+                <TableCell>{{ article.rating ?? 0 }}</TableCell>
+                <TableCell>{{ article.heatScore ?? 0 }}</TableCell>
                 <TableCell class="text-sm text-muted-foreground">
                   {{ article.createdAt ? formatDateTime(article.createdAt) : '-' }}
                 </TableCell>
@@ -267,7 +260,7 @@ async function handleSaveTags() {
                 </TableCell>
               </TableRow>
               <TableRow v-if="articles.length === 0">
-                <TableCell colspan="8" class="text-center text-muted-foreground py-12">
+                <TableCell colspan="10" class="text-center text-muted-foreground py-12">
                   <div class="inline-flex flex-col items-center gap-2">
                     <svg
                       class="w-10 h-10 opacity-30"
@@ -309,7 +302,7 @@ async function handleSaveTags() {
         </DialogHeader>
 
         <div class="mt-4 space-y-4">
-          <TagSelector v-model="selectedTagNames" />
+          <TagSelector v-model="selectedTagNames" :site-id="siteId" />
           <CategorySelector v-model="selectedCategoryIds" :site-id="siteId" />
         </div>
 

@@ -68,6 +68,10 @@ watch(token, (val) => {
 
 let csrfEnabled = import.meta.env.VITE_CSRF_ENABLED === 'true'
 
+// 鉴权 token 注入开关：默认 true（向后兼容），可通过 VITE_TOKEN_ENABLED=false
+// 或运行时 setTokenEnabled(false) 关闭。关闭后 useRequest 不注入 Authorization 头。
+let tokenEnabled = import.meta.env.VITE_TOKEN_ENABLED !== 'false'
+
 /** 获取一次性 CSRF token（每次调用都发起新的 /auth/csrf 请求） */
 async function fetchCsrfToken(): Promise<CsrfToken> {
   const { data } = await useFetch<ApiResponse<CsrfToken>>(
@@ -92,6 +96,11 @@ async function resolveCsrf(): Promise<{ headerName: string; token: string }> {
 /** 开关 CSRF token 注入。默认关闭；开启后每次请求自动获取并携带一次性 CSRF token。 */
 export function setCsrfEnabled(enabled: boolean): void {
   csrfEnabled = enabled
+}
+
+/** 开关鉴权 token 注入。默认开启；关闭后请求不携带 Authorization 头。 */
+export function setTokenEnabled(enabled: boolean): void {
+  tokenEnabled = enabled
 }
 
 // ────────────────────────────────────────────────────────────
@@ -150,4 +159,4 @@ export function clearSession(): void {
   }
 }
 
-export { csrfEnabled, resolveCsrf, BASE_URL }
+export { csrfEnabled, tokenEnabled, resolveCsrf, BASE_URL }

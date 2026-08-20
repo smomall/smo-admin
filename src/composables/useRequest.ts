@@ -11,13 +11,15 @@ import {
   BASE_URL,
   getToken,
   csrfEnabled,
+  tokenEnabled,
   resolveCsrf,
   refreshAccessToken,
   clearSession,
   setCsrfEnabled,
+  setTokenEnabled,
 } from './useAuth'
 export type { ApiResponse, CsrfToken } from './useAuth'
-export { setCsrfEnabled }
+export { setCsrfEnabled, setTokenEnabled }
 
 // ────────────────────────────────────────────────────────────
 // 类型（避免循环依赖，从 useAuth re-export 主类型；此处定义私有局部类型）
@@ -131,7 +133,9 @@ async function retryAfterRefresh(
 
   const { url, options } = ctx.context
   const headers = new Headers(options.headers ?? {})
-  headers.set('Authorization', `Bearer ${newToken}`)
+  if (tokenEnabled) {
+    headers.set('Authorization', `Bearer ${newToken}`)
+  }
   if (csrfEnabled) {
     try {
       const csrf = await resolveCsrf()
@@ -190,9 +194,11 @@ const _fetch = createFetch({
         }
       }
 
-      // 鉴权 token
-      const token = getToken()
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      // 鉴权 token：仅当 tokenEnabled 开启时注入
+      if (tokenEnabled) {
+        const token = getToken()
+        if (token) headers['Authorization'] = `Bearer ${token}`
+      }
 
       // FormData：移除默认 JSON Content-Type，交由浏览器设置 multipart boundary
       if (

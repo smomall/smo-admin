@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { fromLocalDateTimeInput, formatDateTime } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -84,10 +85,10 @@ const {
       searchLoginType.value === '__all__'
         ? undefined
         : searchLoginType.value
-          ? parseInt(searchLoginType.value)
+          ? searchLoginType.value
           : undefined,
-    startAt: startTime.value,
-    endAt: endTime.value,
+    startAt: fromLocalDateTimeInput(startTime.value),
+    endAt: fromLocalDateTimeInput(endTime.value),
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
 })
@@ -210,11 +211,11 @@ function getDeviceTypeIcon(type: number | undefined) {
               </div>
             </TableCell>
             <TableCell>{{
-              log.loginType === 1
+              log.loginType === '1'
                 ? '账号密码'
-                : log.loginType === 2
+                : log.loginType === '2'
                   ? '验证码'
-                  : log.loginType === 3
+                  : log.loginType === '3'
                     ? 'OAuth'
                     : '-'
             }}</TableCell>
@@ -249,7 +250,7 @@ function getDeviceTypeIcon(type: number | undefined) {
             <TableCell>
               <span class="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock class="w-3 h-3" />
-                {{ log.loginAt || log.createdAt }}
+                {{ log.loginAt ? formatDateTime(log.loginAt) : (log.createdAt ? formatDateTime(log.createdAt) : '-') }}
               </span>
             </TableCell>
             <TableCell class="sticky right-0 bg-background">
@@ -330,11 +331,11 @@ function getDeviceTypeIcon(type: number | undefined) {
               <Label>登录类型</Label>
               <Input
                 :model-value="
-                  currentLog.loginType === 1
+                  currentLog.loginType === '1'
                     ? '账号密码'
-                    : currentLog.loginType === 2
+                    : currentLog.loginType === '2'
                       ? '验证码'
-                      : currentLog.loginType === 3
+                      : currentLog.loginType === '3'
                         ? 'OAuth'
                         : '-'
                 "
@@ -372,11 +373,11 @@ function getDeviceTypeIcon(type: number | undefined) {
             </div>
             <div class="space-y-2">
               <Label>登录时间</Label>
-              <Input :model-value="currentLog.loginAt || currentLog.createdAt || '-'" readonly />
+              <Input :model-value="currentLog.loginAt ? formatDateTime(currentLog.loginAt) : (currentLog.createdAt ? formatDateTime(currentLog.createdAt) : '-')" readonly />
             </div>
             <div class="space-y-2">
               <Label>创建时间</Label>
-              <Input :model-value="currentLog.createdAt || '-'" readonly />
+              <Input :model-value="currentLog.createdAt ? formatDateTime(currentLog.createdAt) : '-'" readonly />
             </div>
           </div>
 

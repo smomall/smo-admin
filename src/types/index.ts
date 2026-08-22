@@ -55,7 +55,8 @@ export interface LoginUser {
 }
 
 export interface LoginResponse {
-  token: string
+  /** token 模式下返回；VITE_TOKEN_ENABLED=false 时后端不返回，依赖 cookie 会话 */
+  token?: string
   user: LoginUser
 }
 
@@ -303,7 +304,7 @@ export interface LoginLog {
   userId: string
   username: string
   nickname?: string
-  loginType?: number
+  loginType?: string
   loginResult?: string
   failReason?: string
   loginAt?: string

@@ -20,6 +20,7 @@ import {
 } from '@lucide/vue'
 import { useNotificationStore, type NotificationType } from '@/stores/notification'
 import { useNotificationSse } from '@/composables/useNotificationSse'
+import { parseLocalDateTime } from '@/lib/utils'
 import { toast } from 'vue-sonner'
 
 const notificationStore = useNotificationStore()
@@ -171,8 +172,8 @@ function getTypeColor(type: NotificationType) {
 
 function formatTime(dateStr: string) {
   if (!dateStr) return ''
-  const date = new Date(dateStr)
-  if (isNaN(date.getTime())) return dateStr
+  const date = parseLocalDateTime(dateStr)
+  if (!date) return dateStr
   const now = new Date()
   const diff = now.getTime() - date.getTime()
 

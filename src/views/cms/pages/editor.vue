@@ -24,6 +24,7 @@ import {
 import { Save, Tags, Plus, Edit, Trash2, FileText } from '@lucide/vue'
 import type { Page, PageModel, PageMeta } from '@/types'
 import { pageApi, pageModelApi, pageMetaApi } from '@/api'
+import { toLocalDateTimeInput, fromLocalDateTimeInput } from '@/lib/utils'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useDict } from '@/composables/useDict'
@@ -221,7 +222,7 @@ async function fetchPage(id: string) {
         parentId: page.parentId || '0',
         pageType: page.pageType || '',
         sort: page.sort ?? 0,
-        publishAt: page.publishAt || '',
+        publishAt: page.publishAt ? toLocalDateTimeInput(page.publishAt) : '',
         status: page.status ?? '0',
         seoTitle: page.seoTitle || '',
         seoKeywords: page.seoKeywords || '',
@@ -319,7 +320,7 @@ async function handleSave() {
     parentId: formData.value.parentId,
     pageType: formData.value.pageType,
     sort: formData.value.sort,
-    publishAt: formData.value.publishAt,
+    publishAt: fromLocalDateTimeInput(formData.value.publishAt),
     status: formData.value.status,
     siteId: props.siteId,
     seoTitle: formData.value.seoTitle,

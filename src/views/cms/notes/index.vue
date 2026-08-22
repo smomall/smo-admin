@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, h, watch, type VNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, toLocalDateInput, fromLocalDateInput } from '@/lib/utils'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -487,7 +487,7 @@ async function handleEditNote(note: Note) {
     categoryId: note.categoryId || '__none__',
     cover: note.cover || '',
     status: String(note.status || '0'),
-    publishAt: note.publishAt ? note.publishAt.substring(0, 10) : '',
+    publishAt: note.publishAt ? toLocalDateInput(note.publishAt) : '',
   }
   selectedCategoryIds.value = []
   selectedTagNames.value = []
@@ -527,7 +527,7 @@ async function handleSubmitNote() {
     categoryId: noteForm.value.categoryId === '__none__' ? '' : noteForm.value.categoryId,
     cover: noteForm.value.cover,
     status: noteForm.value.status,
-    publishAt: noteForm.value.publishAt,
+    publishAt: fromLocalDateInput(noteForm.value.publishAt),
     siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,

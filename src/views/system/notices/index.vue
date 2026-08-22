@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch'
 import { Plus, Edit, Trash2, Clock } from '@lucide/vue'
 import type { Notice } from '@/types'
 import { noticeApi } from '@/api'
+import { formatDateTime, toLocalDateTimeInput, fromLocalDateTimeInput } from '@/lib/utils'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -135,20 +136,12 @@ function handleEdit(notice: Notice) {
     content: notice.content,
     type: String(notice.type),
     timingPublish: notice.timingPublish || false,
-    publishAt: notice.publishAt ? formatDateTime(notice.publishAt) : '',
-    expireAt: notice.expireAt ? formatDateTime(notice.expireAt) : '',
+    publishAt: notice.publishAt ? toLocalDateTimeInput(notice.publishAt) : '',
+    expireAt: notice.expireAt ? toLocalDateTimeInput(notice.expireAt) : '',
     importance: String(notice.importance),
     status: String(notice.status),
   }
   showDialog.value = true
-}
-
-function formatDateTime(value: string): string {
-  if (!value) return ''
-  const date = new Date(value)
-  if (isNaN(date.getTime())) return value
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 async function handleDelete(id: string) {
@@ -164,11 +157,6 @@ async function handleDelete(id: string) {
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
   }
-}
-
-function convertDateTime(value: string): string {
-  if (!value) return ''
-  return value.replace('T', ' ') + ':00'
 }
 
 async function handleSubmit() {
@@ -190,8 +178,8 @@ async function handleSubmit() {
     const submitData = {
       ...formData.value,
       importance: Number(formData.value.importance),
-      publishAt: formData.value.timingPublish ? convertDateTime(formData.value.publishAt) : '',
-      expireAt: formData.value.timingPublish ? convertDateTime(formData.value.expireAt) : '',
+      publishAt: formData.value.timingPublish ? fromLocalDateTimeInput(formData.value.publishAt) : '',
+      expireAt: formData.value.timingPublish ? fromLocalDateTimeInput(formData.value.expireAt) : '',
     }
     if (isEdit.value) {
       await noticeApi.update(formData.value.id, submitData)
@@ -305,8 +293,8 @@ async function handleSubmit() {
               </span>
               <span v-else class="text-muted-foreground text-xs">否</span>
             </TableCell>
-            <TableCell>{{ notice.publishAt || '-' }}</TableCell>
-            <TableCell>{{ notice.expireAt || '-' }}</TableCell>
+            <TableCell>{{ notice.publishAt ? formatDateTime(notice.publishAt) : '-' }}</TableCell>
+            <TableCell>{{ notice.expireAt ? formatDateTime(notice.expireAt) : '-' }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-2">
                 <Button variant="ghost" size="sm" @click="handleEdit(notice)">

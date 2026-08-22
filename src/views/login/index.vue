@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { userApi } from '@/api'
 import type { LoginUser } from '@/types'
-import { Shield, Lock, User, Mail, Clock } from '@lucide/vue'
+import { Shield, Lock, User, Mail, Clock, X } from '@lucide/vue'
 import { APP_TITLE } from '@/constants/app'
+import { BASE_URL } from '@/composables/useAuth'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -24,7 +25,9 @@ const otpCode = ref('')
 const isLoading = ref(false)
 const isSendingCode = ref(false)
 const countdown = ref(0)
+const showCaptchaModal = ref(false)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
+let tacInstance: TACInstance | null = null
 
 const isOttMode = computed(() => loginMode.value === 'ott')
 
@@ -62,6 +65,104 @@ async function handleSendCode() {
   }
 }
 
+// 实际执行登录（凭证校验），由 TAC 验证成功回调触发
+async function doLogin() {
+  try {
+    let resultData: { token: string; user: LoginUser } | null = null
+
+    if (loginMode.value === 'password') {
+      const { data } = await userApi.login(username.value, password.value)
+      resultData = data.value
+    } else {
+      const { data } = await userApi.ottVerify(otpCode.value)
+      resultData = data.value
+    }
+
+    if (resultData) {
+      const { token, user } = resultData
+      userStore.login(user, token)
+    }
+    await router.push('/dashboard')
+  } catch {
+    // useRequest 已统一处理错误提示（业务错误 / 网络异常），不重复弹窗
+  } finally {
+    isLoading.value = false
+  }
+}
+
+function closeCaptcha() {
+  if (tacInstance) {
+    tacInstance.destroyWindow()
+    tacInstance = null
+  }
+  showCaptchaModal.value = false
+  isLoading.value = false
+}
+
+// 初始化 TAC 验证码（弹窗 DOM 已渲染后调用）
+function initTacCaptcha() {
+  if (!window.initTAC) {
+    closeCaptcha()
+    doLogin()
+    return
+  }
+
+  const config: TACCaptchaConfig = {
+    requestCaptchaDataUrl: `${BASE_URL}/auth/captcha`,
+    validCaptchaUrl: `${BASE_URL}/auth/check-captcha`,
+    bindEl: '#captcha-box-inner',
+    validSuccess: (_res, _c, tac) => {
+      tac.destroyWindow()
+      tacInstance = null
+      showCaptchaModal.value = false
+      doLogin()
+    },
+    validFail: (_res, _c, tac) => {
+      tac.reloadCaptcha()
+    },
+    btnRefreshFun: (_el, tac) => {
+      tac.reloadCaptcha()
+    },
+    btnCloseFun: (_el, tac) => {
+      tac.destroyWindow()
+      tacInstance = null
+      showCaptchaModal.value = false
+      isLoading.value = false
+    },
+  }
+
+  const style: TACStyleConfig = {
+    logoUrl: null,
+  }
+
+  window
+    .initTAC('/tac', config, style)
+    .then((tac) => {
+      tacInstance = tac
+      tac.init()
+    })
+    .catch((e) => {
+      console.error('初始化tac失败', e)
+      closeCaptcha()
+      doLogin()
+    })
+}
+
+// 启动天爱验证码
+async function startCaptcha() {
+  if (!window.initTAC) {
+    doLogin()
+    return
+  }
+  // 先显示弹窗，等待 DOM 渲染完成后再初始化 TAC
+  showCaptchaModal.value = true
+  await nextTick()
+  // 再等一帧确保 DOM 布局完成
+  requestAnimationFrame(() => {
+    initTacCaptcha()
+  })
+}
+
 async function handleLogin() {
   if (!username.value) {
     showError('请输入用户名')
@@ -81,32 +182,23 @@ async function handleLogin() {
   }
 
   isLoading.value = true
+  startCaptcha()
+}
 
-  try {
-    let resultData: { token: string; user: LoginUser } | null = null
-
-    if (loginMode.value === 'password') {
-      const { data } = await userApi.login(username.value, password.value)
-      resultData = data.value
-    } else {
-      const { data } = await userApi.ottVerify(otpCode.value)
-      resultData = data.value
-    }
-
-    if (resultData) {
-      const { token, user } = resultData
-      userStore.login(user, token)
-      //showSuccess('登录成功')
-      await router.push('/dashboard')
-    }
-    // data.value 为 null 表示业务错误（如密码错误），
-    // useRequest 已统一弹出后端返回的 msg，此处不重复提示以免覆盖
-  } catch {
-    // useRequest 已统一处理错误提示（业务错误 / 网络异常），不重复弹窗
-  } finally {
-    isLoading.value = false
+// 点击遮罩层关闭
+function handleMaskClick(e: MouseEvent) {
+  if (e.target === e.currentTarget) {
+    closeCaptcha()
   }
 }
+
+onUnmounted(() => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  closeCaptcha()
+})
 </script>
 
 <template>
@@ -223,5 +315,72 @@ async function handleLogin() {
         </CardContent>
       </Card>
     </div>
+
+    <!-- 验证码模态弹窗 -->
+    <Teleport to="body">
+      <div
+        v-if="showCaptchaModal"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        @click="handleMaskClick"
+      >
+        <div
+          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl animate-captcha-in"
+          @click.stop
+        >
+          <!-- 关闭按钮 -->
+          <button
+            type="button"
+            @click="closeCaptcha"
+            class="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <X class="w-4 h-4" />
+          </button>
+          <!-- TAC 验证码渲染容器 -->
+          <div id="captcha-box-inner" class="p-0"></div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
+
+<style>
+/* 验证码弹窗进入动画 */
+@keyframes captchaIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-captcha-in {
+  animation: captchaIn 0.2s ease-out forwards;
+}
+
+/* TAC 验证码容器内边距重置，让验证码紧贴弹窗 */
+#captcha-box-inner {
+  position: relative;
+  width: auto;
+  height: auto;
+}
+#captcha-box-inner #tianai-captcha-parent {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+/* 滑块等验证类型相对父容器定位 */
+#captcha-box-inner .tianai-captcha-slider,
+#captcha-box-inner .tianai-captcha-concat,
+#captcha-box-inner .tianai-captcha-rotate,
+#captcha-box-inner .tianai-captcha-word-click,
+#captcha-box-inner .tianai-captcha-disable {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+</style>

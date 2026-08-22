@@ -2,6 +2,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { useEventSource } from '@vueuse/core'
 import { useNotificationStore } from '@/stores/notification'
 import { useUserStore } from '@/stores/user'
+import { isTokenEnabled } from '@/composables/useAuth'
 import { toast } from 'vue-sonner'
 
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api'
@@ -11,16 +12,28 @@ const manualClose = ref(false)
 const sseUrl = ref('')
 
 // 只监听 'notice' 事件名，后端推送统一 event name = notice
+// withCredentials: true 确保 cookie 会话模式下 EventSource 携带 cookie
 const { status, data } = useEventSource(sseUrl, ['notice'], {
   autoReconnect: true,
+  withCredentials: true,
 })
 
 const connected = computed(() => status.value === 'OPEN')
 
-/** 由 token 派生 SSE 地址，空 token 返回空串（不连接） */
-function buildSseUrl(token: string): string {
-  if (!token) return ''
-  return `${API_PREFIX}/events?access_token=${encodeURIComponent(token)}`
+/**
+ * 由登录状态派生 SSE 地址：
+ *  - token 模式：access_token 查询参数鉴权
+ *  - 非 token 模式：依赖 cookie 会话（withCredentials），不带 access_token
+ *  未登录时返回空串（不连接）
+ */
+function buildSseUrl(): string {
+  const userStore = useUserStore()
+  if (isTokenEnabled()) {
+    const token = userStore.getToken()
+    if (!token) return ''
+    return `${API_PREFIX}/events?access_token=${encodeURIComponent(token)}`
+  }
+  return userStore.user ? `${API_PREFIX}/events` : ''
 }
 
 let initialized = false
@@ -59,8 +72,7 @@ function handleMessage(rawData: string) {
 
 function connect() {
   manualClose.value = false
-  const userStore = useUserStore()
-  const url = buildSseUrl(userStore.getToken())
+  const url = buildSseUrl()
   if (!url) {
     sseUrl.value = ''
     return
@@ -95,19 +107,22 @@ export function useNotificationSse() {
       }
     })
 
-    // Auto connect/disconnect on token changes
+    // Auto connect/disconnect on auth state changes
+    // - token 模式：监听 token 变化
+    // - 非 token 模式：监听 userStore.user 变化（cookie 会话登录态）
     watch(
-      () => userStore.getToken(),
-      (token) => {
-        if (token && !manualClose.value) {
-          const url = buildSseUrl(token)
+      () => (isTokenEnabled() ? userStore.getToken() : userStore.user),
+      () => {
+        if (manualClose.value) return
+        const url = buildSseUrl()
+        if (url) {
           if (sseUrl.value !== url) {
             sseUrl.value = url
           }
           // 连接成功后先做一次未读数初始化（不拉列表）
           const notificationStore = useNotificationStore()
           notificationStore.refreshUnreadStats().catch(() => {})
-        } else if (!token) {
+        } else {
           disconnect()
         }
       },

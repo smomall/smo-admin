@@ -70,11 +70,6 @@ export const usePermissionStore = defineStore('permission', () => {
     }
   }
 
-  /** @deprecated 请使用 loadMenusAndBootstrap()。保留兼容。 */
-  async function loadMenus(): Promise<boolean> {
-    return loadMenusAndBootstrap()
-  }
-
   function hasPermission(permissionCode: string): boolean {
     if (!permissions.value.length) return true
 
@@ -109,7 +104,6 @@ export const usePermissionStore = defineStore('permission', () => {
     setMenus,
     setPermissions,
     flatMenus,
-    loadMenus,
     loadMenusAndBootstrap,
     hasPermission,
     getMenuByPath,

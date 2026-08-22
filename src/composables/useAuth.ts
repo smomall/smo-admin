@@ -103,6 +103,13 @@ export function setTokenEnabled(enabled: boolean): void {
   tokenEnabled = enabled
 }
 
+/** 读取当前 token 注入模式是否开启（运行时可被 setTokenEnabled 切换）。
+ *  - true：token 模式，登录态由 token 是否存在判定
+ *  - false：cookie 会话模式，登录态由 /user/info 接口判定，请求不携带 Authorization 头 */
+export function isTokenEnabled(): boolean {
+  return tokenEnabled
+}
+
 // ────────────────────────────────────────────────────────────
 // Token 刷新管理
 //
@@ -112,6 +119,12 @@ export function setTokenEnabled(enabled: boolean): void {
 let refreshInFlight: Promise<string | null> | null = null
 
 export async function refreshAccessToken(): Promise<string | null> {
+  // 非 token 模式（cookie 会话）：无 token 可刷新，会话失效直接清空跳登录
+  if (!tokenEnabled) {
+    clearSession()
+    return null
+  }
+
   if (refreshInFlight) return refreshInFlight
 
   refreshInFlight = (async () => {

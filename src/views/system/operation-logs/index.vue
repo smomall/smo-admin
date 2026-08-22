@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { fromLocalDateTimeInput, formatDateTime } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -63,8 +64,8 @@ const {
     moduleName: searchModuleName.value,
     functionName: searchFunctionName.value,
     operationType: searchOperationType.value === '__all__' ? '' : searchOperationType.value,
-    startAt: startTime.value,
-    endAt: endTime.value,
+    startAt: fromLocalDateTimeInput(startTime.value),
+    endAt: fromLocalDateTimeInput(endTime.value),
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
 })
@@ -247,7 +248,7 @@ async function handleViewDetail(log: OperationLog) {
             <TableCell>
               <span class="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock class="w-3 h-3" />
-                {{ log.endAt || log.startAt }}
+                {{ log.endAt ? formatDateTime(log.endAt) : (log.startAt ? formatDateTime(log.startAt) : '-') }}
               </span>
             </TableCell>
             <TableCell class="sticky right-0 bg-background">
@@ -386,11 +387,11 @@ async function handleViewDetail(log: OperationLog) {
             </div>
             <div class="space-y-2">
               <Label>开始时间</Label>
-              <Input :model-value="currentLog.startAt || '-'" readonly />
+              <Input :model-value="currentLog.startAt ? formatDateTime(currentLog.startAt) : '-'" readonly />
             </div>
             <div class="space-y-2">
               <Label>结束时间</Label>
-              <Input :model-value="currentLog.endAt || '-'" readonly />
+              <Input :model-value="currentLog.endAt ? formatDateTime(currentLog.endAt) : '-'" readonly />
             </div>
           </div>
 

@@ -671,7 +671,7 @@ export const logApi = {
   loginList: (params?: {
     pageNumber?: number
     pageSize?: number
-    loginType?: number
+    loginType?: string
     userId?: string
     username?: string
     startAt?: string

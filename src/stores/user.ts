@@ -13,9 +13,9 @@ export const useUserStore = defineStore('user', () => {
    */
   const token = ref<string>(readAuthToken())
 
-  function login(userInfo: LoginUser, tokenValue: string) {
+  function login(userInfo: LoginUser, tokenValue?: string) {
     user.value = userInfo
-    setToken(tokenValue)
+    setToken(tokenValue || '')
   }
 
   function logout() {

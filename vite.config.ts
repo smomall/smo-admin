@@ -69,9 +69,9 @@ export default defineConfig({
     proxy: {
       // 匹配所有 /api 开头接口
       '/api': {
-        target: 'http://127.0.0.1:18080', // 后端服务地址
+        target: 'http://127.0.0.1:18080/api/', // 后端服务地址
         changeOrigin: true, // 跨域核心
-        //rewrite: (path) => path.replace(/^\/api/, ''), // 去掉 /api 前缀
+        rewrite: (path) => path.replace(/^\/api/, ''), // 去掉 /api 前缀
       },
       // 第三方接口单独代理
       '/oss': {

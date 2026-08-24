@@ -91,7 +91,6 @@ const formData = ref({
   configId: '',
   bucketId: '',
   uploadId: '',
-  fileUsage: 0,
   fileUrl: '',
   fileName: '',
   fileKey: '',
@@ -102,12 +101,10 @@ const formData = ref({
   fileType: '',
   fileSubType: '',
   contentType: '',
-  thumbnail: '',
   width: 0,
   height: 0,
   duration: 0,
   isPart: 0,
-  isTemp: 0,
   uploadStatus: '1',
   status: '1',
   remark: '',
@@ -199,7 +196,6 @@ function handleAdd() {
     configId: '',
     bucketId: '',
     uploadId: '',
-    fileUsage: 0,
     fileUrl: '',
     fileName: '',
     fileKey: '',
@@ -210,12 +206,10 @@ function handleAdd() {
     fileType: '',
     fileSubType: '',
     contentType: '',
-    thumbnail: '',
     width: 0,
     height: 0,
     duration: 0,
     isPart: 0,
-    isTemp: 0,
     uploadStatus: '1',
     status: '1',
     remark: '',
@@ -230,7 +224,6 @@ function handleEdit(file: OssFile) {
     configId: file.configId || '',
     bucketId: file.bucketId || '',
     uploadId: file.uploadId || '',
-    fileUsage: Number(file.fileUsage || 0),
     fileUrl: file.fileUrl || '',
     fileName: file.fileName || '',
     fileKey: file.fileKey || '',
@@ -241,12 +234,10 @@ function handleEdit(file: OssFile) {
     fileType: file.fileType || '',
     fileSubType: file.fileSubType || '',
     contentType: file.contentType || '',
-    thumbnail: file.thumbnail || '',
     width: file.width || 0,
     height: file.height || 0,
     duration: file.duration || 0,
     isPart: file.isPart || 0,
-    isTemp: file.isTemp || 0,
     uploadStatus: String(file.uploadStatus || 1),
     status: String(file.status || 1),
     remark: file.remark || '',
@@ -492,11 +483,11 @@ function copyUrl(url: string | undefined) {
             <!-- 预览 -->
             <TableCell>
               <div
-                v-if="isImageFile(file) && (file.thumbnail || file.fileUrl)"
+                v-if="isImageFile(file) && file.fileUrl"
                 class="w-10 h-10 rounded overflow-hidden bg-muted"
               >
                 <img
-                  :src="file.thumbnail || file.fileUrl"
+                  :src="file.fileUrl"
                   :alt="file.fileName"
                   class="w-full h-full object-cover"
                   loading="lazy"
@@ -630,10 +621,6 @@ function copyUrl(url: string | undefined) {
             <Label>上传ID</Label>
             <Input v-model="formData.uploadId" placeholder="分片上传ID" />
           </div>
-          <div class="space-y-2">
-            <Label>文件用途</Label>
-            <DictSelect v-model="formData.fileUsage" dict-type="file_purpose" />
-          </div>
           <div class="space-y-2 col-span-2">
             <Label>文件URL</Label>
             <Input v-model="formData.fileUrl" placeholder="文件访问URL" />
@@ -674,10 +661,6 @@ function copyUrl(url: string | undefined) {
             <Label>文件子类型</Label>
             <Input v-model="formData.fileSubType" placeholder="如：jpeg" />
           </div>
-          <div class="space-y-2 col-span-2">
-            <Label>缩略图URL</Label>
-            <Input v-model="formData.thumbnail" placeholder="缩略图访问URL" />
-          </div>
           <div class="space-y-2">
             <Label>宽度(px)</Label>
             <Input v-model.number="formData.width" type="number" placeholder="宽度" />
@@ -699,13 +682,6 @@ function copyUrl(url: string | undefined) {
             <Checkbox
               :model-value="formData.isPart === 1"
               @update:model-value="formData.isPart = $event ? 1 : 0"
-            />
-          </div>
-          <div class="space-y-2 flex items-center gap-4">
-            <Label>临时文件</Label>
-            <Checkbox
-              :model-value="formData.isTemp === 1"
-              @update:model-value="formData.isTemp = $event ? 1 : 0"
             />
           </div>
           <div class="space-y-2">

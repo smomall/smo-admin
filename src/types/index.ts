@@ -663,8 +663,6 @@ export interface OssFile {
   configId?: string
   bucketId?: string
   uploadId?: string
-  /** 文件用途（后端 Integer，无 @JsonSerialize） */
-  fileUsage?: number
   fileUrl?: string
   fileName?: string
   fileKey?: string
@@ -675,12 +673,10 @@ export interface OssFile {
   fileType?: string
   fileSubType?: string
   contentType?: string
-  thumbnail?: string
   width?: number
   height?: number
   duration?: number
   isPart?: number
-  isTemp?: number
   /** 上传状态（后端 Integer with @JsonSerialize → string） */
   uploadStatus?: string
   status?: string

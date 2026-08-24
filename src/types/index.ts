@@ -647,6 +647,7 @@ export interface OssBucket {
   id: string
   configId: string
   bucketName: string
+  endpoint?: string
   basePath?: string
   /** 是否默认（后端 Integer，无 @JsonSerialize） */
   isDefault?: number

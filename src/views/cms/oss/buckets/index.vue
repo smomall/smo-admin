@@ -38,6 +38,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useDict } from '@/composables/useDict'
 import { usePagedList } from '@/composables/usePagedList'
 import DictSelect from '@/components/DictSelect.vue'
+import TablePagination from '@/components/TablePagination.vue'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
 
@@ -55,6 +56,7 @@ const formData = ref({
   id: '',
   configId: '',
   bucketName: '',
+  endpoint: '',
   basePath: '',
   isDefault: '0',
   isPublic: '0',
@@ -109,6 +111,7 @@ function handleAdd() {
     id: '',
     configId: configs.value[0]?.id || '',
     bucketName: '',
+    endpoint: '',
     basePath: '',
     isDefault: '0',
     isPublic: '0',
@@ -124,6 +127,7 @@ function handleEdit(bucket: OssBucket) {
     id: bucket.id,
     configId: bucket.configId,
     bucketName: bucket.bucketName || '',
+    endpoint: bucket.endpoint || '',
     basePath: bucket.basePath || '',
     isDefault: String(bucket.isDefault ?? 0),
     isPublic: String(bucket.isPublic ?? 0),
@@ -235,6 +239,7 @@ function getConfigName(configId: string) {
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>存储桶名称</TableHead>
+            <TableHead>端点</TableHead>
             <TableHead>所属配置</TableHead>
             <TableHead>基础路径</TableHead>
             <TableHead>默认</TableHead>
@@ -251,6 +256,9 @@ function getConfigName(configId: string) {
                 <Folder class="w-4 h-4 text-primary" />
                 <span class="font-medium">{{ bucket.bucketName }}</span>
               </div>
+            </TableCell>
+            <TableCell class="max-w-[200px] truncate" :title="bucket.endpoint">
+              {{ bucket.endpoint || '-' }}
             </TableCell>
             <TableCell>{{ getConfigName(bucket.configId) }}</TableCell>
             <TableCell class="max-w-[200px] truncate">{{ bucket.basePath || '-' }}</TableCell>
@@ -280,7 +288,7 @@ function getConfigName(configId: string) {
             </TableCell>
           </TableRow>
           <TableRow v-if="buckets.length === 0">
-            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -338,6 +346,10 @@ function getConfigName(configId: string) {
             <Input v-model="formData.bucketName" placeholder="如：my-bucket" />
           </div>
           <div class="space-y-2">
+            <Label>端点</Label>
+            <Input v-model="formData.endpoint" placeholder="如：oss-cn-beijing.aliyuncs.com" />
+          </div>
+          <div class="space-y-2 col-span-2">
             <Label>基础路径</Label>
             <Input v-model="formData.basePath" placeholder="如：images/" />
           </div>

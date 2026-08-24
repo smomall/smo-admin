@@ -73,17 +73,6 @@ export default defineConfig({
         changeOrigin: true, // 跨域核心
         rewrite: (path) => path.replace(/^\/api/, ''), // 去掉 /api 前缀
       },
-      // 第三方接口单独代理
-      '/oss': {
-        target: 'https://xxx.oss-cn-beijing.aliyuncs.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/oss/, ''),
-      },
-      '/oauth2': {
-        target: 'http://127.0.0.1:8080',
-        changeOrigin: true,
-        //rewrite: (path) => path.replace(/^\/oauth2/, ''),
-      },
     },
   },
 })

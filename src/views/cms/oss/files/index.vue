@@ -101,10 +101,6 @@ const formData = ref({
   fileType: '',
   fileSubType: '',
   contentType: '',
-  width: 0,
-  height: 0,
-  duration: 0,
-  isPart: 0,
   uploadStatus: '1',
   status: '1',
   remark: '',
@@ -206,10 +202,6 @@ function handleAdd() {
     fileType: '',
     fileSubType: '',
     contentType: '',
-    width: 0,
-    height: 0,
-    duration: 0,
-    isPart: 0,
     uploadStatus: '1',
     status: '1',
     remark: '',
@@ -234,10 +226,6 @@ function handleEdit(file: OssFile) {
     fileType: file.fileType || '',
     fileSubType: file.fileSubType || '',
     contentType: file.contentType || '',
-    width: file.width || 0,
-    height: file.height || 0,
-    duration: file.duration || 0,
-    isPart: file.isPart || 0,
     uploadStatus: String(file.uploadStatus || 1),
     status: String(file.status || 1),
     remark: file.remark || '',
@@ -324,13 +312,6 @@ function getUploadStatusClass(status: string | undefined) {
   if (status === '0') return 'bg-red-100 text-red-800'
   if (status === '2') return 'bg-blue-100 text-blue-800'
   return 'bg-gray-100 text-gray-800'
-}
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}秒`
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
 function copyUrl(url: string | undefined) {
@@ -470,8 +451,6 @@ function copyUrl(url: string | undefined) {
             <TableHead>文件URL</TableHead>
             <TableHead class="w-[90px]">大小</TableHead>
             <TableHead class="w-[70px]">类型</TableHead>
-            <TableHead class="w-[80px]">尺寸</TableHead>
-            <TableHead class="w-[80px]">时长</TableHead>
             <TableHead class="w-[60px]">上传状态</TableHead>
             <TableHead class="w-[60px]">状态</TableHead>
             <TableHead class="w-[100px]">创建时间</TableHead>
@@ -532,12 +511,6 @@ function copyUrl(url: string | undefined) {
                 {{ getFileTypeName(file.contentType) }}
               </span>
             </TableCell>
-            <TableCell class="text-sm text-muted-foreground whitespace-nowrap">
-              {{ file.width && file.height ? `${file.width}×${file.height}` : '-' }}
-            </TableCell>
-            <TableCell class="text-sm text-muted-foreground whitespace-nowrap">
-              {{ file.duration ? formatDuration(file.duration) : '-' }}
-            </TableCell>
             <TableCell>
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium"
@@ -569,7 +542,7 @@ function copyUrl(url: string | undefined) {
             </TableCell>
           </TableRow>
           <TableRow v-if="files.length === 0">
-            <TableCell colspan="12" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -662,27 +635,8 @@ function copyUrl(url: string | undefined) {
             <Input v-model="formData.fileSubType" placeholder="如：jpeg" />
           </div>
           <div class="space-y-2">
-            <Label>宽度(px)</Label>
-            <Input v-model.number="formData.width" type="number" placeholder="宽度" />
-          </div>
-          <div class="space-y-2">
-            <Label>高度(px)</Label>
-            <Input v-model.number="formData.height" type="number" placeholder="高度" />
-          </div>
-          <div class="space-y-2">
-            <Label>时长(秒)</Label>
-            <Input v-model.number="formData.duration" type="number" placeholder="时长" />
-          </div>
-          <div class="space-y-2">
             <Label>上传状态</Label>
             <DictSelect v-model="formData.uploadStatus" dict-type="upload_status" />
-          </div>
-          <div class="space-y-2 flex items-center gap-4">
-            <Label>分片文件</Label>
-            <Checkbox
-              :model-value="formData.isPart === 1"
-              @update:model-value="formData.isPart = $event ? 1 : 0"
-            />
           </div>
           <div class="space-y-2">
             <Label>状态</Label>

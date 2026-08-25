@@ -672,10 +672,6 @@ export interface OssFile {
   fileType?: string
   fileSubType?: string
   contentType?: string
-  width?: number
-  height?: number
-  duration?: number
-  isPart?: number
   /** 上传状态（后端 Integer with @JsonSerialize → string） */
   uploadStatus?: string
   status?: string

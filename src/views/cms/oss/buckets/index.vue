@@ -42,6 +42,25 @@ import TablePagination from '@/components/TablePagination.vue'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
 
+const policyOptions = [
+  { label: '私有', value: '0' },
+  { label: '公开读', value: '1' },
+  { label: '公开读写', value: '2' },
+]
+
+function getPolicyLabel(policy: number | string | undefined): string {
+  const item = policyOptions.find((o) => o.value === String(policy))
+  return item ? item.label : '-'
+}
+
+function getPolicyBadgeClass(policy: number | string | undefined): string {
+  const p = String(policy)
+  if (p === '0') return 'bg-gray-100 text-gray-800'
+  if (p === '1') return 'bg-green-100 text-green-800'
+  if (p === '2') return 'bg-orange-100 text-orange-800'
+  return 'bg-gray-100 text-gray-800'
+}
+
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
 
@@ -58,8 +77,8 @@ const formData = ref({
   bucketName: '',
   endpoint: '',
   basePath: '',
-  isDefault: '0',
-  isPublic: '0',
+  isDefault: false,
+  policy: '0',
   status: '1',
   remark: '',
 })
@@ -113,8 +132,8 @@ function handleAdd() {
     bucketName: '',
     endpoint: '',
     basePath: '',
-    isDefault: '0',
-    isPublic: '0',
+    isDefault: false,
+    policy: '0',
     status: '1',
     remark: '',
   }
@@ -129,8 +148,8 @@ function handleEdit(bucket: OssBucket) {
     bucketName: bucket.bucketName || '',
     endpoint: bucket.endpoint || '',
     basePath: bucket.basePath || '',
-    isDefault: String(bucket.isDefault ?? 0),
-    isPublic: String(bucket.isPublic ?? 0),
+    isDefault: bucket.isDefault ?? false,
+    policy: String(bucket.policy ?? 0),
     status: String(bucket.status || 1),
     remark: bucket.remark || '',
   }
@@ -161,8 +180,7 @@ async function handleSubmit() {
   try {
     const payload = {
       ...formData.value,
-      isDefault: Number(formData.value.isDefault),
-      isPublic: Number(formData.value.isPublic),
+      policy: Number(formData.value.policy),
     }
     if (isEdit.value) {
       await ossBucketApi.update(formData.value.id, payload)
@@ -242,6 +260,7 @@ function getConfigName(configId: string) {
             <TableHead>端点</TableHead>
             <TableHead>所属配置</TableHead>
             <TableHead>基础路径</TableHead>
+            <TableHead>策略</TableHead>
             <TableHead>默认</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>创建时间</TableHead>
@@ -263,7 +282,15 @@ function getConfigName(configId: string) {
             <TableCell>{{ getConfigName(bucket.configId) }}</TableCell>
             <TableCell class="max-w-[200px] truncate">{{ bucket.basePath || '-' }}</TableCell>
             <TableCell>
-              <Checkbox :model-value="bucket.isDefault === 1" disabled />
+              <span
+                class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                :class="getPolicyBadgeClass(bucket.policy)"
+              >
+                {{ getPolicyLabel(bucket.policy) }}
+              </span>
+            </TableCell>
+            <TableCell>
+              <Checkbox :model-value="bucket.isDefault" disabled />
             </TableCell>
             <TableCell>
               <span
@@ -288,7 +315,7 @@ function getConfigName(configId: string) {
             </TableCell>
           </TableRow>
           <TableRow v-if="buckets.length === 0">
-            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="11" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -353,16 +380,33 @@ function getConfigName(configId: string) {
             <Label>基础路径</Label>
             <Input v-model="formData.basePath" placeholder="如：images/" />
           </div>
-          <div class="space-y-2 flex items-center gap-4">
-            <Label>默认存储桶</Label>
-            <Checkbox
-              :model-value="formData.isDefault === '1'"
-              @update:model-value="formData.isDefault = $event ? '1' : '0'"
-            />
+          <div class="space-y-2">
+            <Label>策略</Label>
+            <Select v-model="formData.policy">
+              <SelectTrigger>
+                <SelectValue placeholder="选择策略" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="opt in policyOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div class="space-y-2">
             <Label>状态</Label>
             <DictSelect v-model="formData.status" :dict-items="enableStatusItems" />
+          </div>
+          <div class="space-y-2 flex items-center gap-4 col-span-2">
+            <Label>默认存储桶</Label>
+            <Checkbox
+              :model-value="formData.isDefault"
+              @update:model-value="formData.isDefault = $event"
+            />
           </div>
           <div class="space-y-2 col-span-2">
             <Label>备注</Label>

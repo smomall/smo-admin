@@ -633,10 +633,8 @@ export interface OssClientConfig {
   presignUploadExpire?: string
   presignDownloadExpire?: string
   forcePathStyle?: boolean
-  /** 是否默认（后端 Integer，无 @JsonSerialize） */
-  isDefault?: number
-  /** 是否公开（后端 Integer，无 @JsonSerialize） */
-  isPublic?: number
+  /** 是否默认 */
+  isDefault?: boolean
   status: string
   remark?: string
   createdAt?: string
@@ -649,10 +647,10 @@ export interface OssBucket {
   bucketName: string
   endpoint?: string
   basePath?: string
-  /** 是否默认（后端 Integer，无 @JsonSerialize） */
-  isDefault?: number
-  /** 是否公开（后端 Integer，无 @JsonSerialize） */
-  isPublic?: number
+  /** 是否默认 */
+  isDefault?: boolean
+  /** 访问策略（后端 Integer，无 @JsonSerialize） */
+  policy?: number
   status: string
   remark?: string
   createdAt?: string

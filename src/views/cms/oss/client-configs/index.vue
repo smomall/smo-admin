@@ -58,8 +58,7 @@ const formData = ref({
   presignUploadExpire: 'PT10M',
   presignDownloadExpire: 'PT10M',
   forcePathStyle: false,
-  isDefault: '0',
-  isPublic: '0',
+  isDefault: false,
   status: '1',
   remark: '',
 })
@@ -107,8 +106,7 @@ function handleAdd() {
     presignUploadExpire: 'PT10M',
     presignDownloadExpire: 'PT10M',
     forcePathStyle: false,
-    isDefault: '0',
-    isPublic: '0',
+    isDefault: false,
     status: '1',
     remark: '',
   }
@@ -130,8 +128,7 @@ function handleEdit(config: OssClientConfig) {
     presignUploadExpire: config.presignUploadExpire || 'PT10M',
     presignDownloadExpire: config.presignDownloadExpire || 'PT10M',
     forcePathStyle: config.forcePathStyle || false,
-    isDefault: String(config.isDefault ?? 0),
-    isPublic: String(config.isPublic ?? 0),
+    isDefault: config.isDefault ?? false,
     status: String(config.status || 1),
     remark: config.remark || '',
   }
@@ -160,11 +157,7 @@ async function handleSubmit() {
     return
   }
   try {
-    const payload = {
-      ...formData.value,
-      isDefault: Number(formData.value.isDefault),
-      isPublic: Number(formData.value.isPublic),
-    }
+    const payload = { ...formData.value }
     if (isEdit.value) {
       await ossClientConfigApi.update(formData.value.id, payload)
     } else {
@@ -253,7 +246,7 @@ async function handleSubmit() {
             <TableCell class="max-w-[200px] truncate">{{ config.endpoint }}</TableCell>
             <TableCell>{{ config.region || '-' }}</TableCell>
             <TableCell>
-              <Checkbox :model-value="config.isDefault === 1" disabled />
+              <Checkbox :model-value="config.isDefault" disabled />
             </TableCell>
             <TableCell>
               <span
@@ -365,8 +358,8 @@ async function handleSubmit() {
           <div class="space-y-2 flex items-center gap-4">
             <Label>默认配置</Label>
             <Checkbox
-              :model-value="formData.isDefault === '1'"
-              @update:model-value="formData.isDefault = $event ? '1' : '0'"
+              :model-value="formData.isDefault"
+              @update:model-value="formData.isDefault = $event"
             />
           </div>
           <div class="space-y-2">

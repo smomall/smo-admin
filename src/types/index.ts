@@ -661,19 +661,15 @@ export interface OssFile {
   id: string
   configId?: string
   bucketId?: string
-  uploadId?: string
   fileUrl?: string
   fileName?: string
   fileKey?: string
   fileExt?: string
   fileHash?: string
   fileSize?: number
-  fileMeta?: string
   fileType?: string
   fileSubType?: string
   contentType?: string
-  /** 上传状态（后端 Integer with @JsonSerialize → string） */
-  uploadStatus?: string
   status?: string
   remark?: string
   createdAt?: string

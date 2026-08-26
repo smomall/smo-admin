@@ -53,7 +53,6 @@ import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
-const { items: uploadStatusItems } = useDict('upload_status')
 
 const { showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -63,9 +62,7 @@ const searchFileKey = ref('')
 const searchFileExt = ref('')
 const searchFileType = ref('')
 const searchFileSubType = ref('')
-const searchUploadId = ref('')
 const searchBucketId = ref('__all__')
-const searchUploadStatus = ref<string>('__all__')
 const searchConfigId = ref('__all__')
 const showAdvancedSearch = ref(false)
 const showDialog = ref(false)
@@ -90,18 +87,15 @@ const formData = ref({
   id: '',
   configId: '',
   bucketId: '',
-  uploadId: '',
   fileUrl: '',
   fileName: '',
   fileKey: '',
   fileExt: '',
   fileHash: '',
   fileSize: 0,
-  fileMeta: '',
   fileType: '',
   fileSubType: '',
   contentType: '',
-  uploadStatus: '1',
   status: '1',
   remark: '',
 })
@@ -124,9 +118,7 @@ const {
     fileExt: searchFileExt.value,
     fileType: searchFileType.value,
     fileSubType: searchFileSubType.value,
-    uploadId: searchUploadId.value,
     bucketId: searchBucketId.value === '__all__' ? '' : searchBucketId.value,
-    uploadStatus: searchUploadStatus.value === '__all__' ? '' : searchUploadStatus.value,
     configId: searchConfigId.value === '__all__' ? '' : searchConfigId.value,
   }),
 })
@@ -137,9 +129,7 @@ function handleReset() {
   searchFileExt.value = ''
   searchFileType.value = ''
   searchFileSubType.value = ''
-  searchUploadId.value = ''
   searchBucketId.value = '__all__'
-  searchUploadStatus.value = '__all__'
   searchConfigId.value = '__all__'
   handleSearch()
 }
@@ -191,18 +181,15 @@ function handleAdd() {
     id: '',
     configId: '',
     bucketId: '',
-    uploadId: '',
     fileUrl: '',
     fileName: '',
     fileKey: '',
     fileExt: '',
     fileHash: '',
     fileSize: 0,
-    fileMeta: '',
     fileType: '',
     fileSubType: '',
     contentType: '',
-    uploadStatus: '1',
     status: '1',
     remark: '',
   }
@@ -215,18 +202,15 @@ function handleEdit(file: OssFile) {
     id: file.id,
     configId: file.configId || '',
     bucketId: file.bucketId || '',
-    uploadId: file.uploadId || '',
     fileUrl: file.fileUrl || '',
     fileName: file.fileName || '',
     fileKey: file.fileKey || '',
     fileExt: file.fileExt || '',
     fileHash: file.fileHash || '',
     fileSize: file.fileSize || 0,
-    fileMeta: file.fileMeta || '',
     fileType: file.fileType || '',
     fileSubType: file.fileSubType || '',
     contentType: file.contentType || '',
-    uploadStatus: String(file.uploadStatus || 1),
     status: String(file.status || 1),
     remark: file.remark || '',
   }
@@ -300,20 +284,6 @@ function getFileTypeBadgeClass(contentType: string | undefined): string {
   return 'bg-blue-100 text-blue-800'
 }
 
-function getUploadStatusText(status: string | undefined) {
-  if (status === '1') return '成功'
-  if (status === '0') return '失败'
-  if (status === '2') return '上传中'
-  return '-'
-}
-
-function getUploadStatusClass(status: string | undefined) {
-  if (status === '1') return 'bg-green-100 text-green-800'
-  if (status === '0') return 'bg-red-100 text-red-800'
-  if (status === '2') return 'bg-blue-100 text-blue-800'
-  return 'bg-gray-100 text-gray-800'
-}
-
 function copyUrl(url: string | undefined) {
   if (!url) return
   navigator.clipboard.writeText(url)
@@ -373,12 +343,6 @@ function copyUrl(url: string | undefined) {
               }}</SelectItem>
             </SelectContent>
           </Select>
-          <DictSelect
-            v-model="searchUploadStatus"
-            :dict-items="uploadStatusItems"
-            placeholder="上传状态"
-            class="w-32"
-          />
           <Button variant="outline" @click="handleSearch">搜索</Button>
           <Button variant="ghost" @click="handleReset">重置</Button>
           <Button variant="ghost" @click="showAdvancedSearch = !showAdvancedSearch">
@@ -422,12 +386,6 @@ function copyUrl(url: string | undefined) {
               class="w-32"
               @keyup.enter="handleSearch"
             />
-            <Input
-              v-model="searchUploadId"
-              placeholder="上传ID"
-              class="w-40"
-              @keyup.enter="handleSearch"
-            />
           </div>
         </Transition>
       </div>
@@ -451,7 +409,6 @@ function copyUrl(url: string | undefined) {
             <TableHead>文件URL</TableHead>
             <TableHead class="w-[90px]">大小</TableHead>
             <TableHead class="w-[70px]">类型</TableHead>
-            <TableHead class="w-[60px]">上传状态</TableHead>
             <TableHead class="w-[60px]">状态</TableHead>
             <TableHead class="w-[100px]">创建时间</TableHead>
             <TableHead class="w-[90px]">操作</TableHead>
@@ -514,14 +471,6 @@ function copyUrl(url: string | undefined) {
             <TableCell>
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="getUploadStatusClass(file.uploadStatus)"
-              >
-                {{ getUploadStatusText(file.uploadStatus) }}
-              </span>
-            </TableCell>
-            <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
                 :class="'bg-secondary text-secondary-foreground'"
               >
                 {{ getStatusLabel(file.status) }}
@@ -542,7 +491,7 @@ function copyUrl(url: string | undefined) {
             </TableCell>
           </TableRow>
           <TableRow v-if="files.length === 0">
-            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -590,10 +539,6 @@ function copyUrl(url: string | undefined) {
             <Label>存储桶ID</Label>
             <Input v-model="formData.bucketId" placeholder="存储桶ID" />
           </div>
-          <div class="space-y-2">
-            <Label>上传ID</Label>
-            <Input v-model="formData.uploadId" placeholder="分片上传ID" />
-          </div>
           <div class="space-y-2 col-span-2">
             <Label>文件URL</Label>
             <Input v-model="formData.fileUrl" placeholder="文件访问URL" />
@@ -622,10 +567,6 @@ function copyUrl(url: string | undefined) {
             <Label>文件哈希</Label>
             <Input v-model="formData.fileHash" placeholder="文件MD5/SHA256哈希值" />
           </div>
-          <div class="space-y-2 col-span-2">
-            <Label>文件元数据(JSON)</Label>
-            <Input v-model="formData.fileMeta" placeholder="文件元数据JSON格式" />
-          </div>
           <div class="space-y-2">
             <Label>文件类型</Label>
             <Input v-model="formData.fileType" placeholder="如：image" />
@@ -633,10 +574,6 @@ function copyUrl(url: string | undefined) {
           <div class="space-y-2">
             <Label>文件子类型</Label>
             <Input v-model="formData.fileSubType" placeholder="如：jpeg" />
-          </div>
-          <div class="space-y-2">
-            <Label>上传状态</Label>
-            <DictSelect v-model="formData.uploadStatus" dict-type="upload_status" />
           </div>
           <div class="space-y-2">
             <Label>状态</Label>

@@ -501,15 +501,26 @@ export interface Job {
   lastTaskId?: string
   title: string
   description?: string
-  /** 触发类型（后端 String） */
+  /** 业务表达式 */
+  bizExpression?: string
+  /** 触发类型：cron / simple / daily_time / calendar */
   triggerType?: string
-  className?: string
-  beanName?: string
-  methodName?: string
+  /** Cron表达式或ISO-8601 Duration（如PT5M） */
   expression?: string
-  /** 执行策略（后端 String） */
+  /** misfire策略：do_nothing / fire_once / ignore_all / next_existing / next_remaining / now_existing / now_remaining */
   strategy?: string
-  isBean?: boolean
+  /** 间隔值（simple/daily_time/calendar触发器使用） */
+  interval?: number
+  /** 间隔单位：second / minute / hour / day / week / month / year */
+  intervalUnit?: string
+  /** 每周触发的星期（逗号分隔，1=周日..7=周六） */
+  daysOfWeek?: string
+  /** 每日触发开始时间 */
+  startTimeOfDay?: string
+  /** 每日触发结束时间 */
+  endTimeOfDay?: string
+  /** 重复次数（-1或null表示无限重复） */
+  repeatCount?: number
   status: string
   createdAt?: string
   updatedAt?: string

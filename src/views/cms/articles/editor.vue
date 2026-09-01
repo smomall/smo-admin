@@ -105,6 +105,8 @@ const formData = ref({
   viewCount: 0,
   likeCount: 0,
   commentCount: 0,
+  collectCount: 0,
+  wordCount: 0,
   rating: 0,
   heatScore: 0,
   allowComment: true,
@@ -131,6 +133,8 @@ async function fetchArticle(id: string) {
         viewCount: article.viewCount ?? 0,
         likeCount: article.likeCount ?? 0,
         commentCount: article.commentCount ?? 0,
+        collectCount: article.collectCount ?? 0,
+        wordCount: article.wordCount ?? 0,
         rating: article.rating ?? 0,
         heatScore: article.heatScore ?? 0,
         allowComment: article.allowComment ?? true,
@@ -318,7 +322,7 @@ function handleBack() {
           </div>
           <div class="space-y-2 col-span-2">
             <Label>统计数据</Label>
-            <div class="grid grid-cols-5 gap-3">
+            <div class="grid grid-cols-4 gap-3">
               <div class="space-y-1">
                 <Label for="viewCount" class="text-xs text-muted-foreground">浏览量</Label>
                 <Input
@@ -347,6 +351,26 @@ function handleBack() {
                   type="number"
                   class="h-8"
                   placeholder="评论数"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="collectCount" class="text-xs text-muted-foreground">收藏数</Label>
+                <Input
+                  id="collectCount"
+                  v-model="formData.collectCount"
+                  type="number"
+                  class="h-8"
+                  placeholder="收藏数"
+                />
+              </div>
+              <div class="space-y-1">
+                <Label for="wordCount" class="text-xs text-muted-foreground">字数</Label>
+                <Input
+                  id="wordCount"
+                  v-model="formData.wordCount"
+                  type="number"
+                  class="h-8"
+                  placeholder="字数"
                 />
               </div>
               <div class="space-y-1">

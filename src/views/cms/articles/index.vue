@@ -212,6 +212,8 @@ async function handleSaveTags() {
                 <TableHead>浏览</TableHead>
                 <TableHead>点赞</TableHead>
                 <TableHead>评论</TableHead>
+                <TableHead>收藏</TableHead>
+                <TableHead>字数</TableHead>
                 <TableHead>评分</TableHead>
                 <TableHead>热度</TableHead>
                 <TableHead>创建时间</TableHead>
@@ -240,6 +242,8 @@ async function handleSaveTags() {
                 <TableCell>{{ article.viewCount ?? 0 }}</TableCell>
                 <TableCell>{{ article.likeCount ?? 0 }}</TableCell>
                 <TableCell>{{ article.commentCount ?? 0 }}</TableCell>
+                <TableCell>{{ article.collectCount ?? 0 }}</TableCell>
+                <TableCell>{{ article.wordCount ?? 0 }}</TableCell>
                 <TableCell>{{ article.rating ?? 0 }}</TableCell>
                 <TableCell>{{ article.heatScore ?? 0 }}</TableCell>
                 <TableCell class="text-sm text-muted-foreground">
@@ -260,7 +264,7 @@ async function handleSaveTags() {
                 </TableCell>
               </TableRow>
               <TableRow v-if="articles.length === 0">
-                <TableCell colspan="10" class="text-center text-muted-foreground py-12">
+                <TableCell colspan="12" class="text-center text-muted-foreground py-12">
                   <div class="inline-flex flex-col items-center gap-2">
                     <svg
                       class="w-10 h-10 opacity-30"

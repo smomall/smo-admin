@@ -333,6 +333,8 @@ export interface Article {
   viewCount?: number
   likeCount?: number
   commentCount?: number
+  collectCount?: number
+  wordCount?: number
   rating?: number
   heatScore?: number
   allowComment?: boolean

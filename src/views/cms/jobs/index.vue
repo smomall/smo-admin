@@ -29,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Edit, Trash2, Clock, FileText } from '@lucide/vue'
 import type { Job } from '@/types'
 import { jobApi } from '@/api'
@@ -42,26 +41,66 @@ import { usePagedList } from '@/composables/usePagedList'
 import { useRouter } from 'vue-router'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
-const { getLabel: getTriggerTypeLabel } = useDict('job_type')
-const { getLabel: getStrategyLabel } = useDict('job_strategy')
-
-const currentStrategies = computed(() => {
-  return formData.value.triggerType === 'CRON' ? cronStrategies : periodStrategies
-})
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
 const router = useRouter()
 
-const cronStrategies = [
-  { value: 'default', label: '默认' },
-  { value: 'lenient', label: '宽松执行' },
-  { value: 'fixed', label: '固定执行' },
+// 触发器类型选项（与后端 JobServiceImpl 保持一致）
+const triggerTypes = [
+  { value: 'cron', label: 'Cron 表达式' },
+  { value: 'simple', label: '简单间隔' },
+  { value: 'daily_time', label: '每日时间段' },
+  { value: 'calendar', label: '日历周期' },
 ]
 
-const periodStrategies = [
-  { value: 'fixed_rate', label: '固定速率' },
-  { value: 'fixed_delay', label: '固定延迟' },
+function getTriggerTypeLabel(value: string | undefined) {
+  return triggerTypes.find((t) => t.value === (value || '').toLowerCase())?.label || value || '-'
+}
+
+// misfire 策略选项（按触发器类型区分）
+const cronStrategies = [
+  { value: 'do_nothing', label: '不执行（等待下次）' },
+  { value: 'fire_once', label: '立即补跑一次' },
+  { value: 'ignore_all', label: '补跑所有错过' },
+]
+
+const simpleStrategies = [
+  { value: 'ignore_all', label: '补跑所有错过' },
+  { value: 'fire_once', label: '立即触发一次' },
+  { value: 'next_existing', label: '等下一次（保持总次数）' },
+  { value: 'next_remaining', label: '等下一次（扣减剩余）' },
+  { value: 'now_existing', label: '立即触发（保持总次数）' },
+  { value: 'now_remaining', label: '立即触发（扣减剩余）' },
+]
+
+const dailyTimeStrategies = [
+  { value: 'do_nothing', label: '不执行（等待下次）' },
+  { value: 'ignore_all', label: '补跑所有错过' },
+  { value: 'fire_once', label: '立即补跑一次' },
+]
+
+const calendarStrategies = [
+  { value: 'do_nothing', label: '不执行（等待下次）' },
+  { value: 'ignore_all', label: '补跑所有错过' },
+  { value: 'fire_once', label: '立即补跑一次' },
+]
+
+// 间隔单位选项
+const dailyTimeIntervalUnits = [
+  { value: 'second', label: '秒' },
+  { value: 'minute', label: '分钟' },
+  { value: 'hour', label: '小时' },
+]
+
+const calendarIntervalUnits = [
+  { value: 'second', label: '秒' },
+  { value: 'minute', label: '分钟' },
+  { value: 'hour', label: '小时' },
+  { value: 'day', label: '天' },
+  { value: 'week', label: '周' },
+  { value: 'month', label: '月' },
+  { value: 'year', label: '年' },
 ]
 
 const searchKeyword = ref('')
@@ -91,15 +130,66 @@ const formData = ref({
   id: '',
   title: '',
   description: '',
-  triggerType: 'CRON',
-  className: '',
-  beanName: '',
-  methodName: '',
+  bizExpression: '',
+  triggerType: 'cron',
   expression: '',
-  strategy: 'default',
-  isBean: false,
+  strategy: '',
+  interval: null as number | null,
+  intervalUnit: '',
+  daysOfWeek: '',
+  startTimeOfDay: '',
+  endTimeOfDay: '',
+  repeatCount: null as number | null,
   status: '0',
 })
+
+// 触发器类型归一化（小写）
+const normalizedTriggerType = computed(() =>
+  (formData.value.triggerType || '').toLowerCase(),
+)
+
+// 根据触发器类型返回可选策略
+const currentStrategies = computed(() => {
+  switch (normalizedTriggerType.value) {
+    case 'cron': return cronStrategies
+    case 'simple': return simpleStrategies
+    case 'daily_time': return dailyTimeStrategies
+    case 'calendar': return calendarStrategies
+    default: return cronStrategies
+  }
+})
+
+// 根据触发器类型返回可选间隔单位
+const currentIntervalUnits = computed(() => {
+  switch (normalizedTriggerType.value) {
+    case 'daily_time': return dailyTimeIntervalUnits
+    case 'calendar': return calendarIntervalUnits
+    default: return dailyTimeIntervalUnits
+  }
+})
+
+// 是否需要 interval + intervalUnit 字段（daily_time 和 calendar）
+const showInterval = computed(() =>
+  ['daily_time', 'calendar'].includes(normalizedTriggerType.value),
+)
+
+// 是否需要 daysOfWeek / startTimeOfDay / endTimeOfDay 字段（仅 daily_time）
+const showDailyTimeFields = computed(() =>
+  normalizedTriggerType.value === 'daily_time',
+)
+
+// 是否需要 repeatCount 字段（simple 和 daily_time）
+const showRepeatCount = computed(() =>
+  ['simple', 'daily_time'].includes(normalizedTriggerType.value),
+)
+
+function getExpressionPlaceholder() {
+  switch (normalizedTriggerType.value) {
+    case 'cron': return 'Cron表达式，如：0 0 2 * * ?'
+    case 'simple': return 'ISO-8601 Duration，如：PT5M（5分钟）'
+    default: return '请输入表达式'
+  }
+}
 
 function handleReset() {
   searchKeyword.value = ''
@@ -107,21 +197,28 @@ function handleReset() {
   handleSearch()
 }
 
-function handleAdd() {
-  isEdit.value = false
-  formData.value = {
+function getDefaultFormData() {
+  return {
     id: '',
     title: '',
     description: '',
-    triggerType: 'CRON',
-    className: '',
-    beanName: '',
-    methodName: '',
+    bizExpression: '',
+    triggerType: 'cron',
     expression: '',
-    strategy: 'default',
-    isBean: false,
+    strategy: '',
+    interval: null as number | null,
+    intervalUnit: '',
+    daysOfWeek: '',
+    startTimeOfDay: '',
+    endTimeOfDay: '',
+    repeatCount: null as number | null,
     status: '0',
   }
+}
+
+function handleAdd() {
+  isEdit.value = false
+  formData.value = getDefaultFormData()
   showDialog.value = true
 }
 
@@ -131,13 +228,16 @@ function handleEdit(job: Job) {
     id: job.id,
     title: job.title,
     description: job.description || '',
-    triggerType: job.triggerType || '',
-    className: job.className || '',
-    beanName: job.beanName || '',
-    methodName: job.methodName || '',
+    bizExpression: job.bizExpression || '',
+    triggerType: job.triggerType || 'cron',
     expression: job.expression || '',
-    strategy: job.strategy || 'default',
-    isBean: job.isBean || false,
+    strategy: job.strategy || '',
+    interval: job.interval ?? null,
+    intervalUnit: job.intervalUnit || '',
+    daysOfWeek: job.daysOfWeek || '',
+    startTimeOfDay: job.startTimeOfDay || '',
+    endTimeOfDay: job.endTimeOfDay || '',
+    repeatCount: job.repeatCount ?? null,
     status: String(job.status),
   }
   showDialog.value = true
@@ -165,10 +265,7 @@ async function handleSubmit() {
     return
   }
   try {
-    const submitData = {
-      ...formData.value,
-      strategy: formData.value.strategy === 'default' ? '' : formData.value.strategy,
-    }
+    const submitData = { ...formData.value }
     if (isEdit.value) {
       await jobApi.update(submitData.id, submitData)
     } else {
@@ -230,7 +327,7 @@ async function handleSubmit() {
             <TableHead>任务名称</TableHead>
             <TableHead>触发类型</TableHead>
             <TableHead>执行策略</TableHead>
-            <TableHead>执行类</TableHead>
+            <TableHead>业务表达式</TableHead>
             <TableHead>执行表达式</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>创建时间</TableHead>
@@ -247,11 +344,8 @@ async function handleSubmit() {
               </div>
             </TableCell>
             <TableCell>{{ getTriggerTypeLabel(job.triggerType) }}</TableCell>
-            <TableCell class="text-xs">{{ getStrategyLabel(job.strategy) }}</TableCell>
-            <TableCell class="text-xs">
-              <div v-if="job.isBean">{{ job.beanName }}.{{ job.methodName }}</div>
-              <div v-else>{{ job.className }}</div>
-            </TableCell>
+            <TableCell class="text-xs">{{ job.strategy || '-' }}</TableCell>
+            <TableCell class="text-xs">{{ job.bizExpression || '-' }}</TableCell>
             <TableCell class="text-xs">{{ job.expression || '-' }}</TableCell>
             <TableCell>
               <span
@@ -279,7 +373,7 @@ async function handleSubmit() {
             </TableCell>
           </TableRow>
           <TableRow v-if="jobs.length === 0">
-            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -325,47 +419,108 @@ async function handleSubmit() {
           </div>
           <div class="space-y-2">
             <Label>触发类型</Label>
-            <DictSelect
-              v-model="formData.triggerType"
-              dict-type="job_type"
-              placeholder="选择触发类型"
-            />
+            <Select v-model="formData.triggerType">
+              <SelectTrigger>
+                <SelectValue placeholder="选择触发类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="t in triggerTypes"
+                  :key="t.value"
+                  :value="t.value"
+                >
+                  {{ t.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div class="space-y-2 col-span-2">
             <Label>描述</Label>
             <Textarea v-model="formData.description" placeholder="请输入任务描述" rows="2" />
           </div>
-          <div class="space-y-2">
-            <Label>是否Bean方法</Label>
-            <Checkbox v-model="formData.isBean" />
+          <div class="space-y-2 col-span-2">
+            <Label>业务表达式</Label>
+            <Textarea v-model="formData.bizExpression" placeholder="请输入业务表达式" rows="3" />
           </div>
           <div class="space-y-2">
             <Label>状态</Label>
             <DictSelect v-model="formData.status" :dict-items="enableStatusItems" />
           </div>
-          <div v-if="formData.isBean" class="space-y-2">
-            <Label>Bean名称</Label>
-            <Input v-model="formData.beanName" placeholder="Spring Bean名称" />
-          </div>
-          <div v-if="formData.isBean" class="space-y-2">
-            <Label>方法名称</Label>
-            <Input v-model="formData.methodName" placeholder="方法名" />
-          </div>
-          <div v-if="!formData.isBean" class="space-y-2">
-            <Label>执行类</Label>
-            <Input v-model="formData.className" placeholder="完整类名" />
-          </div>
+
+          <!-- 执行表达式（所有触发器类型通用） -->
           <div class="space-y-2">
             <Label>执行表达式</Label>
             <Input
               v-model="formData.expression"
-              :placeholder="
-                formData.triggerType === 'CRON'
-                  ? 'Cron表达式，如：0 0 2 * * ?'
-                  : '周期时间，如：PT5M（5分钟）'
-              "
+              :placeholder="getExpressionPlaceholder()"
             />
           </div>
+
+          <!-- DailyTime / Calendar 触发器：间隔值 + 间隔单位 -->
+          <div v-if="showInterval" class="space-y-2">
+            <Label>间隔值</Label>
+            <Input
+              v-model.number="formData.interval"
+              type="number"
+              placeholder="如：5"
+            />
+          </div>
+          <div v-if="showInterval" class="space-y-2">
+            <Label>间隔单位</Label>
+            <Select v-model="formData.intervalUnit">
+              <SelectTrigger>
+                <SelectValue placeholder="选择间隔单位" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="unit in currentIntervalUnits"
+                  :key="unit.value"
+                  :value="unit.value"
+                >
+                  {{ unit.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <!-- Simple / DailyTime 触发器：重复次数 -->
+          <div v-if="showRepeatCount" class="space-y-2">
+            <Label>重复次数</Label>
+            <Input
+              v-model.number="formData.repeatCount"
+              type="number"
+              placeholder="-1 或留空表示无限重复"
+            />
+          </div>
+
+          <!-- DailyTime 触发器：每周触发日 -->
+          <div v-if="showDailyTimeFields" class="space-y-2">
+            <Label>每周触发日</Label>
+            <Input
+              v-model="formData.daysOfWeek"
+              placeholder="逗号分隔，1=周日,2=周一,...,7=周六。如：2,3,4,5,6"
+            />
+          </div>
+
+          <!-- DailyTime 触发器：每日开始时间 -->
+          <div v-if="showDailyTimeFields" class="space-y-2">
+            <Label>每日开始时间</Label>
+            <Input
+              v-model="formData.startTimeOfDay"
+              type="time"
+            />
+          </div>
+
+          <!-- DailyTime 触发器：每日结束时间 -->
+          <div v-if="showDailyTimeFields" class="space-y-2">
+            <Label>每日结束时间</Label>
+            <Input
+              v-model="formData.endTimeOfDay"
+              type="time"
+            />
+          </div>
+
+          <!-- misfire 策略 -->
           <div class="space-y-2">
             <Label>执行策略</Label>
             <Select v-model="formData.strategy">

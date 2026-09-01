@@ -2,7 +2,6 @@
 export {
   articleApi,
   pageApi,
-  pageContentApi,
   pageMetaApi,
   categoryApi,
   tagApi,
@@ -73,7 +72,6 @@ export type {
   PageModelField,
   PageModelFieldIndex,
   PageMeta,
-  PageContent,
   NavGroup,
   Carousel,
   Note,

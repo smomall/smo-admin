@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Save } from '@lucide/vue'
-import { pageApi, pageContentApi } from '@/api'
+import { pageApi } from '@/api'
 import { useTabStore } from '@/stores/tab'
 import { useSiteStore } from '@/stores/site'
 import DictSelect from '@/components/DictSelect.vue'
@@ -21,42 +21,26 @@ const pageId = computed(() => route.query.id as string | undefined)
 const siteId = computed(() => (route.query.siteId as string) || siteStore.currentSite?.id || '')
 
 const pageTitle = ref('')
-const contentId = ref('')
 const loading = ref(false)
 const saving = ref(false)
 
-// PageContent 现仅承载正文与内容类型；SEO 字段已迁至 Page
 const formData = ref({
   content: '',
   contentType: '',
 })
 
-// 仅取标题用于展示上下文，失败不阻塞内容编辑
 async function fetchPage() {
   if (!pageId.value) return
+  loading.value = true
   try {
     const { data } = await pageApi.getById(pageId.value)
     if (data.value) {
       pageTitle.value = data.value.title || ''
+      formData.value.content = data.value.content || ''
+      formData.value.contentType = data.value.contentType || ''
     }
   } catch {
-    // ignore
-  }
-}
-
-async function fetchPageContent() {
-  if (!pageId.value) return
-  loading.value = true
-  try {
-    const { data } = await pageContentApi.getByPageId(pageId.value)
-    const c = data.value
-    if (c) {
-      contentId.value = c.id || ''
-      formData.value.content = c.content || ''
-      formData.value.contentType = c.contentType || ''
-    }
-  } catch {
-    // useRequest 已统一处理错误提示，不重复弹窗
+    // useRequest 已统一处理错误提示
   } finally {
     loading.value = false
   }
@@ -68,24 +52,14 @@ async function handleSave() {
     return
   }
   saving.value = true
-  const payload = {
-    pageId: pageId.value,
-    content: formData.value.content,
-    contentType: formData.value.contentType,
-  }
   try {
-    if (contentId.value) {
-      await pageContentApi.update(contentId.value, payload)
-    } else {
-      // 首次保存内容后回填 contentId，避免重复创建
-      const { data: createdData } = await pageContentApi.create(payload)
-      if (createdData.value?.id) {
-        contentId.value = createdData.value.id
-      }
-    }
+    await pageApi.update(pageId.value, {
+      content: formData.value.content,
+      contentType: formData.value.contentType,
+    })
     showSuccess('保存成功')
   } catch {
-    // useRequest 已统一处理错误提示，不重复弹窗
+    // useRequest 已统一处理错误提示
   } finally {
     saving.value = false
   }
@@ -101,7 +75,6 @@ function handleBack() {
 
 onMounted(() => {
   fetchPage()
-  fetchPageContent()
 })
 </script>
 

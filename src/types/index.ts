@@ -357,6 +357,8 @@ export interface Page {
   cover?: string
   title: string
   description?: string
+  content?: string
+  contentType?: string
   publishAt?: string
   seoTitle?: string
   seoKeywords?: string
@@ -369,14 +371,6 @@ export interface Page {
   children?: Page[]
   /** 树形缩进层级（前端渲染用瞬态字段） */
   indent?: number
-}
-
-export interface PageContent {
-  id: string
-  pageId?: string
-  content?: string
-  contentType?: string
-  html?: string
 }
 
 export interface Category {

@@ -14,7 +14,6 @@ import type {
   OssBucket,
   OssClientConfig,
   Page,
-  PageContent,
   PageModel,
   PageModelField,
   PageModelFieldIndex,
@@ -140,37 +139,6 @@ export const pageApi = {
   // 删除页面
   delete: (id: string) => {
     return useRequest(`/pages/${id}`, { method: 'DELETE' }).json()
-  },
-}
-
-// ================================================
-// 页面内容 API（与 Page 1:1，承载正文与 SEO 等内容字段）
-// ================================================
-export const pageContentApi = {
-  // 按 pageId 获取页面内容
-  getByPageId: (pageId: string) => {
-    return useRequest<PageContent>(`/page/contents${buildQuery({ pageId })}`).json()
-  },
-
-  // 新增页面内容
-  create: (data: Partial<PageContent>) => {
-    return useRequest<PageContent>('/page/contents', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新页面内容
-  update: (id: string, data: Partial<PageContent>) => {
-    return useRequest(`/page/contents/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除页面内容
-  delete: (id: string) => {
-    return useRequest(`/page/contents/${id}`, { method: 'DELETE' }).json()
   },
 }
 

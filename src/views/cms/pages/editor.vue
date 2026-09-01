@@ -366,7 +366,7 @@ function handleEditContent() {
 
 <template>
   <Dialog :open="open" @update:open="(v) => emit('update:open', v)">
-    <DialogContent class="max-w-4xl max-h-[85vh] flex flex-col overflow-hidden p-0">
+    <DialogContent class="max-w-6xl max-h-[90vh] flex flex-col overflow-hidden p-0">
       <DialogHeader class="px-6 py-4 border-b flex-shrink-0">
         <DialogTitle>{{ isEdit ? '编辑页面' : '新建页面' }}</DialogTitle>
         <DialogDescription>{{

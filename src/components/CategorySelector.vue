@@ -97,7 +97,7 @@ watch(popoverOpen, () => {})
 // 同时监听 siteId，站点切换后重新加载
 watch(
   () => [props.modelValue, props.siteId] as const,
-  ([ids, _siteId]) => {
+  ([ids]) => {
     if (ids && ids.length > 0 && categories.value.length === 0 && !loading.value) {
       fetchCategories()
     }

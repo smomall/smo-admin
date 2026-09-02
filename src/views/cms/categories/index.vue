@@ -88,6 +88,7 @@ const formData = ref({
   title: '',
   slug: '',
   description: '',
+  fileId: '',
   cover: '',
   icon: '',
   parentId: '0',
@@ -97,6 +98,9 @@ const formData = ref({
   seoKeywords: '',
   seoDescription: '',
 })
+
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
 
 function renderCategoryOptions(categoriesList: Category[], level = 0): Category[] {
   const result: Category[] = []
@@ -147,6 +151,7 @@ function handleAdd() {
     title: '',
     slug: '',
     description: '',
+    fileId: '',
     cover: '',
     icon: '',
     parentId: '0',
@@ -156,6 +161,7 @@ function handleAdd() {
     seoKeywords: '',
     seoDescription: '',
   }
+  coverPreviewUrl.value = ''
   showDialog.value = true
 }
 
@@ -166,6 +172,7 @@ function handleEdit(category: Category) {
     title: category.title,
     slug: category.slug || '',
     description: category.description || '',
+    fileId: category.fileId || '',
     cover: category.cover || '',
     icon: category.icon || '',
     parentId: category.parentId || '0',
@@ -175,6 +182,7 @@ function handleEdit(category: Category) {
     seoKeywords: category.seoKeywords || '',
     seoDescription: category.seoDescription || '',
   }
+  coverPreviewUrl.value = category.cover || ''
   showDialog.value = true
 }
 
@@ -207,6 +215,7 @@ async function handleSubmit() {
     ...formData.value,
     siteId: siteId.value,
     parentId: formData.value.parentId,
+    cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
@@ -424,7 +433,11 @@ async function handleSubmit() {
             />
           </div>
           <div class="space-y-2">
-            <CoverInput v-model="formData.cover" />
+            <CoverInput
+              v-model="formData.fileId"
+              :cover-url="coverPreviewUrl"
+              @uploaded="handleCoverUploaded"
+            />
           </div>
           <div class="space-y-2">
             <Label for="icon">图标</Label>

@@ -100,6 +100,7 @@ const formData = ref({
   description: '',
   content: '',
   contentType: '',
+  fileId: '',
   cover: '',
   status: '0',
   viewCount: 0,
@@ -115,6 +116,9 @@ const formData = ref({
   seoDescription: '',
 })
 
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
+
 async function fetchArticle(id: string) {
   loading.value = true
   try {
@@ -128,6 +132,7 @@ async function fetchArticle(id: string) {
         description: article.description || '',
         content: article.content || '',
         contentType: article.contentType || '',
+        fileId: article.fileId || '',
         cover: article.cover || '',
         status: article.status ?? '0',
         viewCount: article.viewCount ?? 0,
@@ -142,6 +147,7 @@ async function fetchArticle(id: string) {
         seoKeywords: article.seoKeywords || '',
         seoDescription: article.seoDescription || '',
       }
+      coverPreviewUrl.value = article.cover || ''
     }
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
@@ -179,6 +185,7 @@ async function handleSave() {
     siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,
+    cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
@@ -314,7 +321,11 @@ function handleBack() {
             />
           </div>
           <div class="space-y-2">
-            <CoverInput v-model="formData.cover" />
+            <CoverInput
+              v-model="formData.fileId"
+              :cover-url="coverPreviewUrl"
+              @uploaded="handleCoverUploaded"
+            />
           </div>
           <div class="space-y-2">
             <Label for="status">状态</Label>

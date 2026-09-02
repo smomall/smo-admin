@@ -70,12 +70,16 @@ const {
 const formData = ref({
   id: '',
   title: '',
+  fileId: '',
   cover: '',
   description: '',
   linkUrl: '',
   sort: 0,
   status: '0',
 })
+
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
 
 function handleReset() {
   searchKeyword.value = ''
@@ -88,12 +92,14 @@ function handleAdd() {
   formData.value = {
     id: '',
     title: '',
+    fileId: '',
     cover: '',
     description: '',
     linkUrl: '',
     sort: 0,
     status: '0',
   }
+  coverPreviewUrl.value = ''
   showDialog.value = true
 }
 
@@ -102,12 +108,14 @@ function handleEdit(carousel: Carousel) {
   formData.value = {
     id: carousel.id,
     title: carousel.title,
+    fileId: carousel.fileId || '',
     cover: carousel.cover || '',
     description: carousel.description || '',
     linkUrl: carousel.linkUrl || '',
     sort: carousel.sort || 0,
     status: String(carousel.status),
   }
+  coverPreviewUrl.value = carousel.cover || ''
   showDialog.value = true
 }
 
@@ -131,6 +139,7 @@ async function handleSubmit() {
   const submitData = {
     ...formData.value,
     siteId: siteId.value,
+    cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
@@ -147,6 +156,11 @@ async function handleSubmit() {
     // useRequest 已统一处理错误提示，不重复弹窗
   }
 }
+
+function handleCoverUploaded(payload: { fileId: string; fileUrl: string }) {
+  coverPreviewUrl.value = payload.fileUrl
+}
+
 </script>
 
 <template>
@@ -303,7 +317,11 @@ async function handleSubmit() {
             <DictSelect v-model="formData.status" :dict-items="enableStatusItems" />
           </div>
           <div class="space-y-2 col-span-2">
-            <CoverInput v-model="formData.cover" />
+            <CoverInput
+              v-model="formData.fileId"
+              :cover-url="coverPreviewUrl"
+              @uploaded="handleCoverUploaded"
+            />
           </div>
           <div class="space-y-2 col-span-2">
             <Label for="description">描述</Label>

@@ -324,6 +324,7 @@ export interface Article {
   categoryId?: string
   categoryIds?: string[]
   tagNames?: string[]
+  fileId?: string
   cover?: string
   title: string
   description?: string
@@ -379,6 +380,7 @@ export interface Category {
   title: string
   slug?: string
   description?: string
+  fileId?: string
   cover?: string
   icon?: string
   parentId?: string
@@ -424,6 +426,7 @@ export interface Note {
   categoryId?: string
   categoryIds?: string[]
   tagNames?: string[]
+  fileId?: string
   cover?: string
   title: string
   description?: string
@@ -788,6 +791,7 @@ export interface Carousel {
   id: string
   siteId?: string
   title: string
+  fileId?: string
   cover?: string
   description?: string
   linkUrl?: string

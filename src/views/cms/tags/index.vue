@@ -75,11 +75,15 @@ const formData = ref({
   title: '',
   slug: '',
   description: '',
+  fileId: '',
   cover: '',
   icon: '',
   status: '0',
   sort: 0,
 })
+
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
 
 function handleReset() {
   searchKeyword.value = ''
@@ -95,11 +99,13 @@ function handleAdd() {
     title: '',
     slug: '',
     description: '',
+    fileId: '',
     cover: '',
     icon: '',
     status: '0',
     sort: 0,
   }
+  coverPreviewUrl.value = ''
   showDialog.value = true
 }
 
@@ -110,11 +116,13 @@ function handleEdit(tag: TagType) {
     title: tag.title,
     slug: tag.slug || '',
     description: tag.description || '',
+    fileId: tag.fileId || '',
     cover: tag.cover || '',
     icon: tag.icon || '',
     status: tag.status ?? '0',
     sort: tag.sort || 0,
   }
+  coverPreviewUrl.value = tag.cover || ''
   showDialog.value = true
 }
 
@@ -138,6 +146,7 @@ async function handleSubmit() {
   const submitData = {
     ...formData.value,
     siteId: siteId.value,
+    cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
@@ -156,6 +165,11 @@ async function handleSubmit() {
     // useRequest 已统一处理错误提示，不重复弹窗
   }
 }
+
+function handleCoverUploaded(payload: { fileId: string; fileUrl: string }) {
+  coverPreviewUrl.value = payload.fileUrl
+}
+
 </script>
 
 <template>
@@ -305,7 +319,11 @@ async function handleSubmit() {
             />
           </div>
           <div class="space-y-2">
-            <CoverInput v-model="formData.cover" />
+            <CoverInput
+              v-model="formData.fileId"
+              :cover-url="coverPreviewUrl"
+              @uploaded="handleCoverUploaded"
+            />
           </div>
           <div class="space-y-2">
             <Label for="icon">图标</Label>

@@ -103,10 +103,14 @@ const noteForm = ref({
   title: '',
   description: '',
   categoryId: '__none__',
+  fileId: '',
   cover: '',
   status: '0',
   publishAt: '',
 })
+
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
 
 // ===== 笔记查询 =====
 const {
@@ -448,10 +452,12 @@ function handleAddNote() {
     title: '',
     description: '',
     categoryId: selectedCategoryId.value || '__none__',
+    fileId: '',
     cover: '',
     status: '0',
     publishAt: '',
   }
+  coverPreviewUrl.value = ''
   selectedCategoryIds.value = []
   selectedTagNames.value = []
   activeChapterId.value = ''
@@ -485,10 +491,12 @@ async function handleEditNote(note: Note) {
     title: note.title,
     description: note.description || '',
     categoryId: note.categoryId || '__none__',
+    fileId: note.fileId || '',
     cover: note.cover || '',
     status: String(note.status || '0'),
     publishAt: note.publishAt ? toLocalDateInput(note.publishAt) : '',
   }
+  coverPreviewUrl.value = note.cover || ''
   selectedCategoryIds.value = []
   selectedTagNames.value = []
   selectedNote.value = note
@@ -939,7 +947,11 @@ onMounted(() => {
                 <Input v-model="noteForm.publishAt" type="date" />
               </div>
               <div class="space-y-2 col-span-2">
-                <CoverInput v-model="noteForm.cover" />
+                <CoverInput
+                  v-model="noteForm.fileId"
+                  :cover-url="coverPreviewUrl"
+                  @uploaded="(p) => (coverPreviewUrl = p.fileUrl)"
+                />
               </div>
               <div class="col-span-2">
                 <CategorySelector v-model="selectedCategoryIds" :site-id="siteId" />

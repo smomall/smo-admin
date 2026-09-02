@@ -72,6 +72,7 @@ const defaultForm = () => ({
   title: '',
   slug: '',
   description: '',
+  fileId: '',
   cover: '',
   modelId: '__none__',
   parentId: props.parentId || '0',
@@ -85,6 +86,9 @@ const defaultForm = () => ({
 })
 
 const formData = ref(defaultForm())
+
+/** 用于表单预览的 cover URL （编辑时来自后端回显） */
+const coverPreviewUrl = ref('')
 
 const metaList = ref<PageMeta[]>([])
 const metaFormData = ref({
@@ -217,6 +221,7 @@ async function fetchPage(id: string) {
         title: page.title,
         slug: page.slug || '',
         description: page.description || '',
+        fileId: page.fileId || '',
         cover: page.cover || '',
         modelId: page.modelId || '__none__',
         parentId: page.parentId || '0',
@@ -228,6 +233,7 @@ async function fetchPage(id: string) {
         seoKeywords: page.seoKeywords || '',
         seoDescription: page.seoDescription || '',
       }
+      coverPreviewUrl.value = page.cover || ''
     }
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
@@ -299,6 +305,10 @@ function closeDialog() {
   emit('update:open', false)
 }
 
+function handleCoverUploaded(payload: { fileId: string; fileUrl: string }) {
+  coverPreviewUrl.value = payload.fileUrl
+}
+
 async function handleSave() {
   if (!formData.value.title) {
     showError('请填写页面标题')
@@ -315,7 +325,7 @@ async function handleSave() {
     title: formData.value.title,
     slug: formData.value.slug,
     description: formData.value.description,
-    cover: formData.value.cover,
+    fileId: formData.value.fileId,
     modelId: formData.value.modelId === '__none__' ? '' : formData.value.modelId,
     parentId: formData.value.parentId,
     pageType: formData.value.pageType,

@@ -67,6 +67,8 @@ const formData = ref({
   description: '',
   menuIds: '',
   price: '',
+  discount: '',
+  features: '',
   accountLimit: '',
   expireDays: '',
   status: '1',
@@ -105,6 +107,8 @@ function handleAdd() {
     description: '',
     menuIds: '',
     price: '',
+    discount: '',
+    features: '',
     accountLimit: '',
     expireDays: '',
     status: '1',
@@ -121,6 +125,8 @@ function handleEdit(pkg: TenantPackage) {
     description: pkg.description || '',
     menuIds: pkg.menuIds || '',
     price: pkg.price != null ? String(pkg.price) : '',
+    discount: pkg.discount != null ? String(pkg.discount) : '',
+    features: pkg.features || '',
     accountLimit: pkg.accountLimit != null ? String(pkg.accountLimit) : '',
     expireDays: pkg.expireDays != null ? String(pkg.expireDays) : '',
     status: String(pkg.status ?? 1),
@@ -150,6 +156,8 @@ async function handleSubmit() {
     const payload = {
       ...formData.value,
       price: formData.value.price ? Number(formData.value.price) : undefined,
+      discount: formData.value.discount ? Number(formData.value.discount) : undefined,
+      features: formData.value.features || undefined,
       accountLimit: formData.value.accountLimit
         ? Number(formData.value.accountLimit)
         : undefined,
@@ -216,6 +224,7 @@ async function handleSubmit() {
             <TableHead>套餐名称</TableHead>
             <TableHead>描述</TableHead>
             <TableHead>价格</TableHead>
+            <TableHead>折扣</TableHead>
             <TableHead>账号上限</TableHead>
             <TableHead>有效天数</TableHead>
             <TableHead>状态</TableHead>
@@ -236,6 +245,7 @@ async function handleSubmit() {
               {{ pkg.description || '-' }}
             </TableCell>
             <TableCell>{{ pkg.price != null ? `¥${pkg.price}` : '-' }}</TableCell>
+            <TableCell>{{ pkg.discount != null ? `¥${pkg.discount}` : '-' }}</TableCell>
             <TableCell>{{ pkg.accountLimit ?? '-' }}</TableCell>
             <TableCell>{{ pkg.expireDays != null ? `${pkg.expireDays}天` : '-' }}</TableCell>
             <TableCell>
@@ -261,7 +271,7 @@ async function handleSubmit() {
             </TableCell>
           </TableRow>
           <TableRow v-if="packages.length === 0">
-            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="10" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -308,6 +318,14 @@ async function handleSubmit() {
           <div class="space-y-2">
             <Label>价格</Label>
             <Input v-model="formData.price" type="number" step="0.01" placeholder="如：99.00" />
+          </div>
+          <div class="space-y-2">
+            <Label>折扣</Label>
+            <Input v-model="formData.discount" type="number" step="0.01" placeholder="如：79.00" />
+          </div>
+          <div class="space-y-2 col-span-2">
+            <Label>功能特性</Label>
+            <Textarea v-model="formData.features" placeholder="功能特性描述" rows="2" />
           </div>
           <div class="space-y-2 col-span-2">
             <Label>描述</Label>

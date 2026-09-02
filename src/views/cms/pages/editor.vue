@@ -470,7 +470,7 @@ function handleEditContent() {
               <DictSelect v-model="formData.status" :dict-items="pageStatusItems" />
             </div>
             <div class="space-y-2 col-span-2">
-              <CoverInput v-model="formData.cover" />
+              <CoverInput v-model="formData.cover" :cover-url="coverPreviewUrl" @uploaded="handleCoverUploaded" />
             </div>
             <div class="space-y-2 col-span-2">
               <Label for="description">摘要</Label>

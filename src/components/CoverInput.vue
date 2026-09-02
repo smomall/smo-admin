@@ -46,7 +46,6 @@ watch(
 )
 
 /** 用于预览的实际URL：本地暂存 > 后端回显coverUrl */
-const previewUrl = computed(() => localCoverUrl.value || '')
 const displayCoverUrl = computed(() => localCoverUrl.value)
 
 function handleUploadSuccess(file: OssFile) {

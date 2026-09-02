@@ -39,6 +39,8 @@ export {
   notificationApi,
   statisticsApi,
   logApi,
+  tenantApi,
+  tenantPackageApi,
 } from './system'
 
 // 导出类型
@@ -77,4 +79,6 @@ export type {
   Note,
   Chapter,
   Document,
+  Tenant,
+  TenantPackage,
 } from '@/types'

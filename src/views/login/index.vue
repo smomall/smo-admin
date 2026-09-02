@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { userApi } from '@/api'
-import { Shield, Lock, User, Mail, Clock, X } from '@lucide/vue'
+import { Shield, Lock, User, Mail, Clock, X, Building2 } from '@lucide/vue'
 import { APP_TITLE } from '@/constants/app'
 import { BASE_URL } from '@/composables/useAuth'
 
@@ -18,6 +18,7 @@ const userStore = useUserStore()
 const { showError, showSuccess } = useMessageDialog()
 
 const loginMode = ref<'password' | 'ott'>('password')
+const tenant = ref('default')
 const username = ref('')
 const password = ref('')
 const otpCode = ref('')
@@ -68,7 +69,7 @@ async function handleSendCode() {
 async function doLogin() {
   try {
     if (loginMode.value === 'password') {
-      const { data } = await userApi.login(username.value, password.value)
+      const { data } = await userApi.login(username.value, password.value, tenant.value)
       if (data && data.value) {
         const { token, user } = data.value
         userStore.login(user, token)
@@ -162,6 +163,10 @@ async function startCaptcha() {
 }
 
 async function handleLogin() {
+  if (!tenant.value) {
+    showError('请输入租户编码')
+    return
+  }
   if (!username.value) {
     showError('请输入用户名')
     return
@@ -270,6 +275,17 @@ onUnmounted(async () => {
                 <Mail class="w-4 h-4" />
                 验证码登录
               </button>
+            </div>
+
+            <!-- 租户编码 -->
+            <div class="space-y-2">
+              <Label for="tenant" class="text-sm font-medium">租户编码</Label>
+              <div class="relative">
+                <Building2
+                  class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                />
+                <Input id="tenant" v-model="tenant" placeholder="请输入租户编码" class="pl-10" />
+              </div>
             </div>
 
             <!-- 用户名 -->

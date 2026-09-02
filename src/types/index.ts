@@ -794,3 +794,35 @@ export interface Carousel {
   sort?: number
   status: string
 }
+
+export interface Tenant {
+  id: string
+  packageId?: string
+  name: string
+  code: string
+  contactPerson?: string
+  contactPhone?: string
+  contactEmail?: string
+  expireAt?: string
+  accountLimit?: number
+  status?: number
+  remark?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface TenantPackage {
+  id: string
+  name: string
+  description?: string
+  menuIds?: string
+  price?: number
+  discount?: number
+  features?: string
+  accountLimit?: number
+  expireDays?: number
+  status?: number
+  remark?: string
+  createdAt?: string
+  updatedAt?: string
+}

@@ -18,6 +18,8 @@ import type {
   LoginUser,
   LoginResponse,
   PageResult,
+  Tenant,
+  TenantPackage,
 } from '@/types'
 import { useRequest } from '@/composables/useRequest'
 import { buildQuery } from './query'
@@ -691,5 +693,89 @@ export const logApi = {
 
   loginClear: () => {
     return useRequest('/logs/login/clear', { method: 'DELETE' }).json()
+  },
+}
+
+// ================================================
+// 租户管理 API
+// ================================================
+export const tenantApi = {
+  list: (params?: {
+    pageNumber?: number
+    pageSize?: number
+    name?: string
+    code?: string
+    contactPerson?: string
+    contactPhone?: string
+    packageId?: string
+    status?: string
+  }) => {
+    return useRequest<PageResult<Tenant>>(`/tenants/page${buildQuery(params)}`).json()
+  },
+
+  getAll: () => {
+    return useRequest<Tenant[]>('/tenants').json()
+  },
+
+  getById: (id: string) => {
+    return useRequest<Tenant>(`/tenants/${id}`).json()
+  },
+
+  create: (data: Partial<Tenant>) => {
+    return useRequest('/tenants', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }).json()
+  },
+
+  update: (id: string, data: Partial<Tenant>) => {
+    return useRequest(`/tenants/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }).json()
+  },
+
+  delete: (id: string) => {
+    return useRequest(`/tenants/${id}`, { method: 'DELETE' }).json()
+  },
+}
+
+// ================================================
+// 租户套餐管理 API
+// ================================================
+export const tenantPackageApi = {
+  list: (params?: {
+    pageNumber?: number
+    pageSize?: number
+    name?: string
+    status?: string
+  }) => {
+    return useRequest<PageResult<TenantPackage>>(`/tenant-packages/page${buildQuery(params)}`).json()
+  },
+
+  getAll: () => {
+    return useRequest<TenantPackage[]>('/tenant-packages').json()
+  },
+
+  getById: (id: string) => {
+    return useRequest<TenantPackage>(`/tenant-packages/${id}`).json()
+  },
+
+  create: (data: Partial<TenantPackage>) => {
+    return useRequest('/tenant-packages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }).json()
+  },
+
+  update: (id: string, data: Partial<TenantPackage>) => {
+    return useRequest(`/tenant-packages/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }).json()
+  },
+
+  delete: (id: string) => {
+    return useRequest(`/tenant-packages/${id}`, { method: 'DELETE' }).json()
   },
 }

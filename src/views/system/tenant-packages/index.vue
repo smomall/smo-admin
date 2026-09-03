@@ -63,7 +63,7 @@ function getStatusBadgeClass(status: number | string | undefined): string {
 
 const formData = ref({
   id: '',
-  name: '',
+  title: '',
   description: '',
   menuIds: '',
   price: '',
@@ -88,7 +88,7 @@ const {
 } = usePagedList({
   fetcher: (query) => tenantPackageApi.list(query),
   params: () => ({
-    name: searchName.value,
+    title: searchName.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
 })
@@ -103,7 +103,7 @@ function handleAdd() {
   isEdit.value = false
   formData.value = {
     id: '',
-    name: '',
+    title: '',
     description: '',
     menuIds: '',
     price: '',
@@ -121,7 +121,7 @@ function handleEdit(pkg: TenantPackage) {
   isEdit.value = true
   formData.value = {
     id: pkg.id,
-    name: pkg.name || '',
+    title: pkg.title || '',
     description: pkg.description || '',
     menuIds: pkg.menuIds || '',
     price: pkg.price != null ? String(pkg.price) : '',
@@ -148,7 +148,7 @@ async function handleDelete(id: string) {
 }
 
 async function handleSubmit() {
-  if (!formData.value.name) {
+  if (!formData.value.title) {
     showError('请填写套餐名称')
     return
   }
@@ -238,7 +238,7 @@ async function handleSubmit() {
             <TableCell>
               <div class="flex items-center gap-2">
                 <Package class="w-4 h-4 text-primary" />
-                <span class="font-medium">{{ pkg.name }}</span>
+                <span class="font-medium">{{ pkg.title }}</span>
               </div>
             </TableCell>
             <TableCell class="max-w-[200px] truncate" :title="pkg.description">
@@ -313,7 +313,7 @@ async function handleSubmit() {
         <div class="grid grid-cols-2 gap-4 mt-4">
           <div class="space-y-2">
             <Label>套餐名称 <span class="text-red-500">*</span></Label>
-            <Input v-model="formData.name" placeholder="如：基础版" />
+            <Input v-model="formData.title" placeholder="如：基础版" />
           </div>
           <div class="space-y-2">
             <Label>价格</Label>

@@ -819,7 +819,7 @@ export interface Tenant {
 
 export interface TenantPackage {
   id: string
-  name: string
+  title: string
   description?: string
   menuIds?: string
   price?: number

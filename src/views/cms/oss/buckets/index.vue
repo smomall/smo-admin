@@ -405,7 +405,7 @@ function getConfigName(configId: string) {
             <Label>默认存储桶</Label>
             <Checkbox
               :model-value="formData.isDefault"
-              @update:model-value="formData.isDefault = $event"
+              @update:model-value="formData.isDefault = Boolean($event)"
             />
           </div>
           <div class="space-y-2 col-span-2">

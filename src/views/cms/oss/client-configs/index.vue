@@ -359,7 +359,7 @@ async function handleSubmit() {
             <Label>默认配置</Label>
             <Checkbox
               :model-value="formData.isDefault"
-              @update:model-value="formData.isDefault = $event"
+              @update:model-value="formData.isDefault = Boolean($event)"
             />
           </div>
           <div class="space-y-2">

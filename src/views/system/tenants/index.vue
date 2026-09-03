@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { formatDateTime } from '@/lib/utils'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,9 +61,7 @@ function getStatusLabel(status: number | string | undefined): string {
 }
 
 function getStatusBadgeClass(status: number | string | undefined): string {
-  return String(status) === '1'
-    ? 'bg-green-100 text-green-800'
-    : 'bg-gray-100 text-gray-800'
+  return String(status) === '1' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
 }
 
 const formData = ref({
@@ -152,7 +151,7 @@ function handleEdit(tenant: Tenant) {
     contactPerson: tenant.contactPerson || '',
     contactPhone: tenant.contactPhone || '',
     contactEmail: tenant.contactEmail || '',
-    expireAt: tenant.expireAt ? tenant.expireAt.slice(0, 16) : '',
+    expireAt: tenant.expireAt ?? '',
     accountLimit: tenant.accountLimit != null ? String(tenant.accountLimit) : '',
     status: String(tenant.status ?? 1),
     remark: tenant.remark || '',
@@ -184,9 +183,7 @@ async function handleSubmit() {
   try {
     const payload = {
       ...formData.value,
-      accountLimit: formData.value.accountLimit
-        ? Number(formData.value.accountLimit)
-        : undefined,
+      accountLimit: formData.value.accountLimit ? Number(formData.value.accountLimit) : undefined,
       status: Number(formData.value.status),
       expireAt: formData.value.expireAt || undefined,
     }
@@ -222,8 +219,18 @@ function getPackageName(packageId: string | undefined) {
 
     <div class="bg-card rounded-xl border shadow-sm p-4">
       <div class="flex items-center gap-2 flex-wrap">
-        <Input v-model="searchName" placeholder="租户名称" class="w-36" @keyup.enter="handleSearch" />
-        <Input v-model="searchCode" placeholder="租户编码" class="w-36" @keyup.enter="handleSearch" />
+        <Input
+          v-model="searchName"
+          placeholder="租户名称"
+          class="w-36"
+          @keyup.enter="handleSearch"
+        />
+        <Input
+          v-model="searchCode"
+          placeholder="租户编码"
+          class="w-36"
+          @keyup.enter="handleSearch"
+        />
         <Input
           v-model="searchContactPerson"
           placeholder="联系人"
@@ -398,7 +405,7 @@ function getPackageName(packageId: string | undefined) {
           </div>
           <div class="space-y-2">
             <Label>到期时间</Label>
-            <Input v-model="formData.expireAt" type="datetime-local" />
+            <DateTimePicker v-model="formData.expireAt" placeholder="请选择到期时间" />
           </div>
           <div class="space-y-2">
             <Label>账号上限</Label>

@@ -356,6 +356,7 @@ export interface Page {
   modelId?: string
   slug?: string
   cover?: string
+  fileId?: string
   title: string
   description?: string
   content?: string
@@ -404,6 +405,7 @@ export interface Tag {
   slug?: string
   description?: string
   cover?: string
+  fileId?: string
   icon?: string
   status?: string
   articleCount?: number

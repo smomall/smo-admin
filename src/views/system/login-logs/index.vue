@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { fromLocalDateTimeInput, formatDateTime } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 import {
   Table,
   TableBody,
@@ -87,8 +88,8 @@ const {
         : searchLoginType.value
           ? searchLoginType.value
           : undefined,
-    startAt: fromLocalDateTimeInput(startTime.value),
-    endAt: fromLocalDateTimeInput(endTime.value),
+    startAt: startTime.value || '',
+    endAt: endTime.value || '',
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
 })
@@ -158,8 +159,8 @@ function getDeviceTypeIcon(type: number | undefined) {
           placeholder="全部状态"
           class="w-32"
         />
-        <Input v-model="startTime" type="datetime-local" placeholder="开始时间" class="w-48" />
-        <Input v-model="endTime" type="datetime-local" placeholder="结束时间" class="w-48" />
+        <DateTimePicker v-model="startTime" placeholder="开始时间" class="w-48" />
+        <DateTimePicker v-model="endTime" placeholder="结束时间" class="w-48" />
         <Button variant="outline" @click="handleSearch">搜索</Button>
         <Button variant="ghost" @click="handleReset">重置</Button>
       </div>
@@ -250,7 +251,13 @@ function getDeviceTypeIcon(type: number | undefined) {
             <TableCell>
               <span class="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock class="w-3 h-3" />
-                {{ log.loginAt ? formatDateTime(log.loginAt) : (log.createdAt ? formatDateTime(log.createdAt) : '-') }}
+                {{
+                  log.loginAt
+                    ? formatDateTime(log.loginAt)
+                    : log.createdAt
+                      ? formatDateTime(log.createdAt)
+                      : '-'
+                }}
               </span>
             </TableCell>
             <TableCell class="sticky right-0 bg-background">
@@ -373,11 +380,23 @@ function getDeviceTypeIcon(type: number | undefined) {
             </div>
             <div class="space-y-2">
               <Label>登录时间</Label>
-              <Input :model-value="currentLog.loginAt ? formatDateTime(currentLog.loginAt) : (currentLog.createdAt ? formatDateTime(currentLog.createdAt) : '-')" readonly />
+              <Input
+                :model-value="
+                  currentLog.loginAt
+                    ? formatDateTime(currentLog.loginAt)
+                    : currentLog.createdAt
+                      ? formatDateTime(currentLog.createdAt)
+                      : '-'
+                "
+                readonly
+              />
             </div>
             <div class="space-y-2">
               <Label>创建时间</Label>
-              <Input :model-value="currentLog.createdAt ? formatDateTime(currentLog.createdAt) : '-'" readonly />
+              <Input
+                :model-value="currentLog.createdAt ? formatDateTime(currentLog.createdAt) : '-'"
+                readonly
+              />
             </div>
           </div>
 

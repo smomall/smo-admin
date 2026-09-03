@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, h, watch, type VNode } from 'vue'
 import { useRoute } from 'vue-router'
-import { formatDateTime, toLocalDateInput, fromLocalDateInput } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,7 +32,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Edit, Trash2, Folder, FolderOpen, ChevronRight, FileText, ChevronsDownUp, ChevronsUpDown } from '@lucide/vue'
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  FileText,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from '@lucide/vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import type { Note, Chapter, Category } from '@/types'
@@ -168,7 +179,7 @@ watch(
     docDirty.value =
       docForm.value.content !== docSnapshot.value.content ||
       docForm.value.contentType !== docSnapshot.value.contentType
-  }
+  },
 )
 
 async function fetchChapters(noteId: string) {
@@ -283,7 +294,10 @@ async function activateChapter(id: string, force = false) {
     return
   }
   if (activeChapterId.value && docDirty.value) {
-    const ok = await confirm('未保存的更改', '当前文档内容尚未保存，切换章节将丢失未保存内容，是否继续？')
+    const ok = await confirm(
+      '未保存的更改',
+      '当前文档内容尚未保存，切换章节将丢失未保存内容，是否继续？',
+    )
     if (!ok) return
   }
   const chapter = flatChapters.value.find((c) => c.id === id)
@@ -419,7 +433,11 @@ async function handleSubmitChapterDialog() {
     showChapterDialog.value = false
     if (selectedNote.value) {
       await fetchChapters(selectedNote.value.id)
-      if (isAddChapterDialog.value && editChapterForm.value.parentId && editChapterForm.value.parentId !== '0') {
+      if (
+        isAddChapterDialog.value &&
+        editChapterForm.value.parentId &&
+        editChapterForm.value.parentId !== '0'
+      ) {
         expandedChapterIds.value.add(editChapterForm.value.parentId)
       }
     }
@@ -468,10 +486,7 @@ function handleAddNote() {
 
 async function fetchNoteRelations(id: string) {
   try {
-    const [tagsRes, catsRes] = await Promise.all([
-      noteApi.listTags(id),
-      noteApi.listCategories(id),
-    ])
+    const [tagsRes, catsRes] = await Promise.all([noteApi.listTags(id), noteApi.listCategories(id)])
     if (tagsRes.data.value) {
       selectedTagNames.value = tagsRes.data.value.map((t) => t.title)
     }
@@ -494,7 +509,7 @@ async function handleEditNote(note: Note) {
     fileId: note.fileId || '',
     cover: note.cover || '',
     status: String(note.status || '0'),
-    publishAt: note.publishAt ? toLocalDateInput(note.publishAt) : '',
+    publishAt: note.publishAt ?? '',
   }
   coverPreviewUrl.value = note.cover || ''
   selectedCategoryIds.value = []
@@ -535,7 +550,7 @@ async function handleSubmitNote() {
     categoryId: noteForm.value.categoryId === '__none__' ? '' : noteForm.value.categoryId,
     cover: noteForm.value.cover,
     status: noteForm.value.status,
-    publishAt: fromLocalDateInput(noteForm.value.publishAt),
+    publishAt: noteForm.value.publishAt,
     siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,
@@ -620,9 +635,7 @@ function renderChapterNode(chapter: Chapter, depth: number): VNode {
           {
             class:
               'flex-1 min-w-0 flex items-center gap-1.5 px-1.5 rounded text-sm transition-colors cursor-pointer ' +
-              (isActive
-                ? 'bg-primary/10 text-primary font-medium '
-                : 'hover:bg-muted/50'),
+              (isActive ? 'bg-primary/10 text-primary font-medium ' : 'hover:bg-muted/50'),
             onClick: () => activateChapter(chapter.id),
           },
           [
@@ -640,8 +653,7 @@ function renderChapterNode(chapter: Chapter, depth: number): VNode {
             h(
               'span',
               {
-                class:
-                  'text-[10px] tabular-nums text-muted-foreground/50 shrink-0 font-mono',
+                class: 'text-[10px] tabular-nums text-muted-foreground/50 shrink-0 font-mono',
               },
               `L${(chapter.level ?? depth) + 1}`,
             ),
@@ -649,8 +661,7 @@ function renderChapterNode(chapter: Chapter, depth: number): VNode {
             // 未保存标记
             hasUnsaved
               ? h('span', {
-                  class:
-                    'w-1.5 h-1.5 shrink-0 rounded-full bg-orange-500 animate-pulse',
+                  class: 'w-1.5 h-1.5 shrink-0 rounded-full bg-orange-500 animate-pulse',
                   title: '未保存',
                 })
               : null,
@@ -659,8 +670,7 @@ function renderChapterNode(chapter: Chapter, depth: number): VNode {
               ? h(
                   'span',
                   {
-                    class:
-                      'text-[10px] tabular-nums text-muted-foreground/50 shrink-0',
+                    class: 'text-[10px] tabular-nums text-muted-foreground/50 shrink-0',
                     title: '排序',
                   },
                   `#${chapter.sort}`,
@@ -682,8 +692,7 @@ function renderChapterNode(chapter: Chapter, depth: number): VNode {
               ? h(
                   'span',
                   {
-                    class:
-                      'text-xs px-1.5 rounded-full bg-muted text-muted-foreground shrink-0',
+                    class: 'text-xs px-1.5 rounded-full bg-muted text-muted-foreground shrink-0',
                   },
                   String(chapter.children!.length),
                 )
@@ -944,7 +953,11 @@ onMounted(() => {
               </div>
               <div class="space-y-2">
                 <Label>发布时间</Label>
-                <Input v-model="noteForm.publishAt" type="date" />
+                <DateTimePicker
+                  v-model="noteForm.publishAt"
+                  date-only
+                  placeholder="请选择发布时间"
+                />
               </div>
               <div class="space-y-2 col-span-2">
                 <CoverInput
@@ -984,7 +997,10 @@ onMounted(() => {
                       :title="allExpanded ? '全部收起' : '全部展开'"
                       @click="toggleExpandAll"
                     >
-                      <component :is="allExpanded ? ChevronsDownUp : ChevronsUpDown" class="w-3.5 h-3.5" />
+                      <component
+                        :is="allExpanded ? ChevronsDownUp : ChevronsUpDown"
+                        class="w-3.5 h-3.5"
+                      />
                     </Button>
                   </div>
                   <Button size="sm" variant="outline" @click="handleAddChapter()">
@@ -1024,10 +1040,7 @@ onMounted(() => {
                       >
                         — {{ activeChapter.description }}
                       </span>
-                      <span
-                        v-if="docDirty"
-                        class="text-xs text-orange-500 shrink-0"
-                      >
+                      <span v-if="docDirty" class="text-xs text-orange-500 shrink-0">
                         ● 未保存
                       </span>
                     </div>
@@ -1047,10 +1060,7 @@ onMounted(() => {
                       v-if="docLoading || !mdReady"
                       class="flex-1 flex items-center justify-center text-muted-foreground text-sm border border-dashed rounded-lg border-border bg-muted/10"
                     >
-                      <div
-                        v-if="docLoading"
-                        class="flex items-center"
-                      >
+                      <div v-if="docLoading" class="flex items-center">
                         <div
                           class="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full mr-2"
                         ></div>
@@ -1094,7 +1104,8 @@ onMounted(() => {
                   <FileText class="w-14 h-14 opacity-20 mb-3" />
                   <p class="mb-2 font-medium text-foreground/60">从左侧选择章节开始编辑文档</p>
                   <p class="text-xs text-muted-foreground/80 max-w-md text-center">
-                    点击章节标题切换到对应章节的文档编辑器；编辑章节基本信息请点击章节点上的 <span class="text-primary">✎</span> 按钮
+                    点击章节标题切换到对应章节的文档编辑器；编辑章节基本信息请点击章节点上的
+                    <span class="text-primary">✎</span> 按钮
                   </p>
                 </div>
               </div>
@@ -1116,7 +1127,11 @@ onMounted(() => {
         <DialogHeader>
           <DialogTitle>{{ isAddChapterDialog ? '新增章节' : '编辑章节' }}</DialogTitle>
           <DialogDescription>
-            {{ isAddChapterDialog ? '添加新章节（保存后可在右栏编辑器填写正文）' : '编辑章节基本信息（标题/父章节/状态/排序等）' }}
+            {{
+              isAddChapterDialog
+                ? '添加新章节（保存后可在右栏编辑器填写正文）'
+                : '编辑章节基本信息（标题/父章节/状态/排序等）'
+            }}
           </DialogDescription>
         </DialogHeader>
         <div class="space-y-4 py-2">
@@ -1157,7 +1172,9 @@ onMounted(() => {
               <DictSelect v-model="editChapterForm.status" :dict-items="chapterStatusItems" />
             </div>
             <div class="space-y-2">
-              <Label>层级 <span class="text-xs text-muted-foreground font-normal">（自动）</span></Label>
+              <Label
+                >层级 <span class="text-xs text-muted-foreground font-normal">（自动）</span></Label
+              >
               <Input
                 :model-value="`L${editChapterForm.level + 1}`"
                 readonly

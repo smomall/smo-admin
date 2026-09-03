@@ -324,7 +324,7 @@ function handleBack() {
             <CoverInput
               v-model="formData.fileId"
               :cover-url="coverPreviewUrl"
-              @uploaded="handleCoverUploaded"
+              @uploaded="(p) => (coverPreviewUrl = p.fileUrl)"
             />
           </div>
           <div class="space-y-2">

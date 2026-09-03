@@ -24,7 +24,7 @@ import {
 import { Save, Tags, Plus, Edit, Trash2, FileText } from '@lucide/vue'
 import type { Page, PageModel, PageMeta } from '@/types'
 import { pageApi, pageModelApi, pageMetaApi } from '@/api'
-import { toLocalDateTimeInput, fromLocalDateTimeInput } from '@/lib/utils'
+import { parseLocalDateTime } from '@/lib/utils'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useDict } from '@/composables/useDict'
@@ -227,7 +227,7 @@ async function fetchPage(id: string) {
         parentId: page.parentId || '0',
         pageType: page.pageType || '',
         sort: page.sort ?? 0,
-        publishAt: page.publishAt ? toLocalDateTimeInput(page.publishAt) : '',
+        publishAt: page.publishAt ?? '',
         status: page.status ?? '0',
         seoTitle: page.seoTitle || '',
         seoKeywords: page.seoKeywords || '',
@@ -330,7 +330,7 @@ async function handleSave() {
     parentId: formData.value.parentId,
     pageType: formData.value.pageType,
     sort: formData.value.sort,
-    publishAt: fromLocalDateTimeInput(formData.value.publishAt),
+    publishAt: formData.value.publishAt,
     status: formData.value.status,
     siteId: props.siteId,
     seoTitle: formData.value.seoTitle,
@@ -463,14 +463,22 @@ function handleEditContent() {
             </div>
             <div class="space-y-2">
               <Label for="publishAt">发布时间</Label>
-              <Input id="publishAt" type="datetime-local" v-model="formData.publishAt" />
+              <DateTimePicker
+                id="publishAt"
+                v-model="formData.publishAt"
+                placeholder="请选择发布时间"
+              />
             </div>
             <div class="space-y-2">
               <Label for="status">状态</Label>
               <DictSelect v-model="formData.status" :dict-items="pageStatusItems" />
             </div>
             <div class="space-y-2 col-span-2">
-              <CoverInput v-model="formData.cover" :cover-url="coverPreviewUrl" @uploaded="handleCoverUploaded" />
+              <CoverInput
+                v-model="formData.cover"
+                :cover-url="coverPreviewUrl"
+                @uploaded="handleCoverUploaded"
+              />
             </div>
             <div class="space-y-2 col-span-2">
               <Label for="description">摘要</Label>

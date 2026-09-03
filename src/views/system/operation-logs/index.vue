@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { fromLocalDateTimeInput, formatDateTime } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 import {
   Table,
   TableBody,
@@ -64,8 +65,8 @@ const {
     moduleName: searchModuleName.value,
     functionName: searchFunctionName.value,
     operationType: searchOperationType.value === '__all__' ? '' : searchOperationType.value,
-    startAt: fromLocalDateTimeInput(startTime.value),
-    endAt: fromLocalDateTimeInput(endTime.value),
+    startAt: startTime.value || '',
+    endAt: endTime.value || '',
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
   }),
 })
@@ -160,8 +161,8 @@ async function handleViewDetail(log: OperationLog) {
           placeholder="全部状态"
           class="w-32"
         />
-        <Input v-model="startTime" type="datetime-local" placeholder="开始时间" class="w-48" />
-        <Input v-model="endTime" type="datetime-local" placeholder="结束时间" class="w-48" />
+        <DateTimePicker v-model="startTime" placeholder="开始时间" class="w-48" />
+        <DateTimePicker v-model="endTime" placeholder="结束时间" class="w-48" />
         <Button variant="outline" @click="handleSearch">搜索</Button>
         <Button variant="ghost" @click="handleReset">重置</Button>
       </div>
@@ -248,7 +249,13 @@ async function handleViewDetail(log: OperationLog) {
             <TableCell>
               <span class="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock class="w-3 h-3" />
-                {{ log.endAt ? formatDateTime(log.endAt) : (log.startAt ? formatDateTime(log.startAt) : '-') }}
+                {{
+                  log.endAt
+                    ? formatDateTime(log.endAt)
+                    : log.startAt
+                      ? formatDateTime(log.startAt)
+                      : '-'
+                }}
               </span>
             </TableCell>
             <TableCell class="sticky right-0 bg-background">
@@ -387,11 +394,17 @@ async function handleViewDetail(log: OperationLog) {
             </div>
             <div class="space-y-2">
               <Label>开始时间</Label>
-              <Input :model-value="currentLog.startAt ? formatDateTime(currentLog.startAt) : '-'" readonly />
+              <Input
+                :model-value="currentLog.startAt ? formatDateTime(currentLog.startAt) : '-'"
+                readonly
+              />
             </div>
             <div class="space-y-2">
               <Label>结束时间</Label>
-              <Input :model-value="currentLog.endAt ? formatDateTime(currentLog.endAt) : '-'" readonly />
+              <Input
+                :model-value="currentLog.endAt ? formatDateTime(currentLog.endAt) : '-'"
+                readonly
+              />
             </div>
           </div>
 

@@ -134,37 +134,43 @@ const formData = ref({
   triggerType: 'cron',
   expression: '',
   strategy: '',
-  interval: null as number | null,
+  interval: undefined as number | undefined,
   intervalUnit: '',
   daysOfWeek: '',
   startTimeOfDay: '',
   endTimeOfDay: '',
-  repeatCount: null as number | null,
+  repeatCount: undefined as number | undefined,
   status: '0',
 })
 
 // 触发器类型归一化（小写）
-const normalizedTriggerType = computed(() =>
-  (formData.value.triggerType || '').toLowerCase(),
-)
+const normalizedTriggerType = computed(() => (formData.value.triggerType || '').toLowerCase())
 
 // 根据触发器类型返回可选策略
 const currentStrategies = computed(() => {
   switch (normalizedTriggerType.value) {
-    case 'cron': return cronStrategies
-    case 'simple': return simpleStrategies
-    case 'daily_time': return dailyTimeStrategies
-    case 'calendar': return calendarStrategies
-    default: return cronStrategies
+    case 'cron':
+      return cronStrategies
+    case 'simple':
+      return simpleStrategies
+    case 'daily_time':
+      return dailyTimeStrategies
+    case 'calendar':
+      return calendarStrategies
+    default:
+      return cronStrategies
   }
 })
 
 // 根据触发器类型返回可选间隔单位
 const currentIntervalUnits = computed(() => {
   switch (normalizedTriggerType.value) {
-    case 'daily_time': return dailyTimeIntervalUnits
-    case 'calendar': return calendarIntervalUnits
-    default: return dailyTimeIntervalUnits
+    case 'daily_time':
+      return dailyTimeIntervalUnits
+    case 'calendar':
+      return calendarIntervalUnits
+    default:
+      return dailyTimeIntervalUnits
   }
 })
 
@@ -174,9 +180,7 @@ const showInterval = computed(() =>
 )
 
 // 是否需要 daysOfWeek / startTimeOfDay / endTimeOfDay 字段（仅 daily_time）
-const showDailyTimeFields = computed(() =>
-  normalizedTriggerType.value === 'daily_time',
-)
+const showDailyTimeFields = computed(() => normalizedTriggerType.value === 'daily_time')
 
 // 是否需要 repeatCount 字段（simple 和 daily_time）
 const showRepeatCount = computed(() =>
@@ -185,9 +189,12 @@ const showRepeatCount = computed(() =>
 
 function getExpressionPlaceholder() {
   switch (normalizedTriggerType.value) {
-    case 'cron': return 'Cron表达式，如：0 0 2 * * ?'
-    case 'simple': return 'ISO-8601 Duration，如：PT5M（5分钟）'
-    default: return '请输入表达式'
+    case 'cron':
+      return 'Cron表达式，如：0 0 2 * * ?'
+    case 'simple':
+      return 'ISO-8601 Duration，如：PT5M（5分钟）'
+    default:
+      return '请输入表达式'
   }
 }
 
@@ -206,12 +213,12 @@ function getDefaultFormData() {
     triggerType: 'cron',
     expression: '',
     strategy: '',
-    interval: null as number | null,
+    interval: undefined as number | undefined,
     intervalUnit: '',
     daysOfWeek: '',
     startTimeOfDay: '',
     endTimeOfDay: '',
-    repeatCount: null as number | null,
+    repeatCount: undefined as number | undefined,
     status: '0',
   }
 }
@@ -232,12 +239,12 @@ function handleEdit(job: Job) {
     triggerType: job.triggerType || 'cron',
     expression: job.expression || '',
     strategy: job.strategy || '',
-    interval: job.interval ?? null,
+    interval: job.interval,
     intervalUnit: job.intervalUnit || '',
     daysOfWeek: job.daysOfWeek || '',
     startTimeOfDay: job.startTimeOfDay || '',
     endTimeOfDay: job.endTimeOfDay || '',
-    repeatCount: job.repeatCount ?? null,
+    repeatCount: job.repeatCount,
     status: String(job.status),
   }
   showDialog.value = true
@@ -424,11 +431,7 @@ async function handleSubmit() {
                 <SelectValue placeholder="选择触发类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem
-                  v-for="t in triggerTypes"
-                  :key="t.value"
-                  :value="t.value"
-                >
+                <SelectItem v-for="t in triggerTypes" :key="t.value" :value="t.value">
                   {{ t.label }}
                 </SelectItem>
               </SelectContent>
@@ -450,20 +453,13 @@ async function handleSubmit() {
           <!-- 执行表达式（所有触发器类型通用） -->
           <div class="space-y-2">
             <Label>执行表达式</Label>
-            <Input
-              v-model="formData.expression"
-              :placeholder="getExpressionPlaceholder()"
-            />
+            <Input v-model="formData.expression" :placeholder="getExpressionPlaceholder()" />
           </div>
 
           <!-- DailyTime / Calendar 触发器：间隔值 + 间隔单位 -->
           <div v-if="showInterval" class="space-y-2">
             <Label>间隔值</Label>
-            <Input
-              v-model.number="formData.interval"
-              type="number"
-              placeholder="如：5"
-            />
+            <Input v-model.number="formData.interval" type="number" placeholder="如：5" />
           </div>
           <div v-if="showInterval" class="space-y-2">
             <Label>间隔单位</Label>
@@ -505,19 +501,13 @@ async function handleSubmit() {
           <!-- DailyTime 触发器：每日开始时间 -->
           <div v-if="showDailyTimeFields" class="space-y-2">
             <Label>每日开始时间</Label>
-            <Input
-              v-model="formData.startTimeOfDay"
-              type="time"
-            />
+            <Input v-model="formData.startTimeOfDay" type="time" />
           </div>
 
           <!-- DailyTime 触发器：每日结束时间 -->
           <div v-if="showDailyTimeFields" class="space-y-2">
             <Label>每日结束时间</Label>
-            <Input
-              v-model="formData.endTimeOfDay"
-              type="time"
-            />
+            <Input v-model="formData.endTimeOfDay" type="time" />
           </div>
 
           <!-- misfire 策略 -->

@@ -25,7 +25,8 @@ import { Switch } from '@/components/ui/switch'
 import { Plus, Edit, Trash2, Clock } from '@lucide/vue'
 import type { Notice } from '@/types'
 import { noticeApi } from '@/api'
-import { formatDateTime, toLocalDateTimeInput, fromLocalDateTimeInput } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -136,8 +137,8 @@ function handleEdit(notice: Notice) {
     content: notice.content,
     type: String(notice.type),
     timingPublish: notice.timingPublish || false,
-    publishAt: notice.publishAt ? toLocalDateTimeInput(notice.publishAt) : '',
-    expireAt: notice.expireAt ? toLocalDateTimeInput(notice.expireAt) : '',
+    publishAt: notice.publishAt ?? '',
+    expireAt: notice.expireAt ?? '',
     importance: String(notice.importance),
     status: String(notice.status),
   }
@@ -169,7 +170,7 @@ async function handleSubmit() {
     return
   }
   if (formData.value.timingPublish && formData.value.publishAt && formData.value.expireAt) {
-    if (new Date(formData.value.expireAt) <= new Date(formData.value.publishAt)) {
+    if (formData.value.expireAt <= formData.value.publishAt) {
       showError('过期时间必须晚于发布时间')
       return
     }
@@ -178,8 +179,8 @@ async function handleSubmit() {
     const submitData = {
       ...formData.value,
       importance: Number(formData.value.importance),
-      publishAt: formData.value.timingPublish ? fromLocalDateTimeInput(formData.value.publishAt) : '',
-      expireAt: formData.value.timingPublish ? fromLocalDateTimeInput(formData.value.expireAt) : '',
+      publishAt: formData.value.timingPublish ? formData.value.publishAt : '',
+      expireAt: formData.value.timingPublish ? formData.value.expireAt : '',
     }
     if (isEdit.value) {
       await noticeApi.update(formData.value.id, submitData)
@@ -262,7 +263,9 @@ async function handleSubmit() {
               <span
                 class="px-2 py-1 rounded-full text-xs font-medium"
                 :class="
-                  notice.type === '1' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                  notice.type === '1'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-purple-100 text-purple-800'
                 "
               >
                 {{ getTypeName(String(notice.type)) }}
@@ -377,19 +380,17 @@ async function handleSubmit() {
           </div>
           <div v-if="formData.timingPublish" class="space-y-2">
             <Label for="publishAt">发布时间</Label>
-            <Input
+            <DateTimePicker
               id="publishAt"
               v-model="formData.publishAt"
-              type="datetime-local"
               placeholder="请选择发布时间"
             />
           </div>
           <div v-if="formData.timingPublish" class="space-y-2">
             <Label for="expireAt">过期时间</Label>
-            <Input
+            <DateTimePicker
               id="expireAt"
               v-model="formData.expireAt"
-              type="datetime-local"
               placeholder="不设置则永不过期"
             />
           </div>

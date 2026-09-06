@@ -25,6 +25,16 @@ export {
   documentApi,
 } from './cms'
 
+// AI模块API
+export {
+  chatModelApi,
+  chatAgentApi,
+  chatAssistantApi,
+  knowledgeBaseApi,
+  chatSessionApi,
+  chatResourceApi,
+} from './ai'
+
 // 系统模块API
 export {
   userApi,
@@ -81,4 +91,10 @@ export type {
   Document,
   Tenant,
   TenantPackage,
+  ChatModel,
+  ChatAgent,
+  ChatAssistant,
+  KnowledgeBase,
+  ChatSession,
+  ChatResource,
 } from '@/types'

@@ -461,11 +461,11 @@ export const emailApi = {
     return useRequest(`/emails/${id}`, { method: 'DELETE' }).json()
   },
 
-  // 发送测试邮件
-  sendTest: (id: string, testEmail: string) => {
-    return useRequest(`/emails/${id}/test`, {
+  // 发送邮件（对应后端 POST /emails/{id}/send）
+  send: (id: string, params: { to: string; title: string; description: string }) => {
+    return useRequest(`/emails/${id}/send`, {
       method: 'POST',
-      body: JSON.stringify({ email: testEmail }),
+      body: JSON.stringify(params),
     }).json()
   },
 }

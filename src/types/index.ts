@@ -544,6 +544,10 @@ export interface Email {
   /** 协议（后端 String） */
   protocol?: string
   host?: string
+  /** 端口（后端 Integer，无 @JsonSerialize） */
+  port?: number
+  /** 发件人显示名称（后端 String） */
+  personal?: string
   username?: string
   password?: string
   defaultEncoding?: string
@@ -829,6 +833,94 @@ export interface TenantPackage {
   expireDays?: number
   status?: number
   remark?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+// ================================================
+// AI 模块类型
+// ================================================
+
+export interface ChatModel {
+  id: string
+  baseUrl?: string
+  apiKey?: string
+  providerId?: string
+  modelName?: string
+  description?: string
+  temperature?: number
+  topP?: number
+  stop?: string[]
+  maxOutputTokens?: number
+  toolChoice?: string
+  responseFormat?: string
+  timeout?: number
+  maxRetries?: number
+  status?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ChatAgent {
+  id: string
+  projectId?: string
+  modelId?: string
+  knowledgeBaseId?: string
+  agentName?: string
+  description?: string
+  systemPrompt?: string
+  tools?: string[]
+  skills?: string[]
+  status?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ChatAssistant {
+  id: string
+  projectId?: string
+  modelId?: string
+  knowledgeBaseId?: string
+  assistantName?: string
+  description?: string
+  systemPrompt?: string
+  tools?: string[]
+  skills?: string[]
+  status?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface KnowledgeBase {
+  id: string
+  projectId?: string
+  baseName?: string
+  description?: string
+  collection?: string
+  dimension?: number
+  embeddingModelId?: string
+  maxSegmentSizeInChars?: number
+  maxOverlapSizeInChars?: number
+  status?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ChatSession {
+  id: string
+  aiId?: string
+  sessionType?: string
+  title?: string
+  maxSeq?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ChatResource {
+  id: string
+  sessionId?: string
+  fileId?: string
+  seq?: string
   createdAt?: string
   updatedAt?: string
 }

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 
-import { Plus, Edit, Trash2, Mail } from '@lucide/vue'
+import { Plus, Edit, Trash2, Mail, Send } from '@lucide/vue'
 import type { Email } from '@/types'
 import { emailApi } from '@/api'
 import { useDict } from '@/composables/useDict'
@@ -43,11 +43,16 @@ const searchUsername = ref('')
 const searchStatus = ref<string>('__all__')
 const showDialog = ref(false)
 const isEdit = ref(false)
+const showSendDialog = ref(false)
+const sending = ref(false)
+const sendFormData = ref({ id: '', to: '', title: '', description: '' })
 
 const formData = ref({
   id: '',
   protocol: '',
   host: '',
+  port: '' as string | number,
+  personal: '',
   username: '',
   password: '',
   defaultEncoding: '',
@@ -88,6 +93,8 @@ function handleAdd() {
     id: '',
     protocol: '',
     host: '',
+    port: '',
+    personal: '',
     username: '',
     password: '',
     defaultEncoding: '',
@@ -103,6 +110,8 @@ function handleEdit(email: Email) {
     id: email.id,
     protocol: email.protocol || '',
     host: email.host || '',
+    port: email.port ?? '',
+    personal: email.personal || '',
     username: email.username || '',
     password: email.password || '',
     defaultEncoding: email.defaultEncoding || '',
@@ -141,6 +150,32 @@ async function handleSubmit() {
     else handleSearch()
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
+  }
+}
+
+function handleOpenSend(email: Email) {
+  sendFormData.value = { id: email.id, to: '', title: '', description: '' }
+  showSendDialog.value = true
+}
+
+async function handleSendSubmit() {
+  if (!sendFormData.value.to || !sendFormData.value.title) {
+    showError('请填写收件人和邮件标题')
+    return
+  }
+  sending.value = true
+  try {
+    await emailApi.send(sendFormData.value.id, {
+      to: sendFormData.value.to,
+      title: sendFormData.value.title,
+      description: sendFormData.value.description,
+    })
+    showSuccess('邮件发送成功')
+    showSendDialog.value = false
+  } catch {
+    // useRequest 已统一处理错误提示，不重复弹窗
+  } finally {
+    sending.value = false
   }
 }
 </script>
@@ -195,6 +230,8 @@ async function handleSubmit() {
             <TableHead>ID</TableHead>
             <TableHead>协议</TableHead>
             <TableHead>服务器地址</TableHead>
+            <TableHead>端口</TableHead>
+            <TableHead>发件人名称</TableHead>
             <TableHead>用户名</TableHead>
             <TableHead>编码</TableHead>
             <TableHead>状态</TableHead>
@@ -212,6 +249,8 @@ async function handleSubmit() {
               </div>
             </TableCell>
             <TableCell>{{ email.host }}</TableCell>
+            <TableCell>{{ email.port ?? '-' }}</TableCell>
+            <TableCell>{{ email.personal || '-' }}</TableCell>
             <TableCell>{{ email.username }}</TableCell>
             <TableCell>{{ email.defaultEncoding || '-' }}</TableCell>
             <TableCell>
@@ -230,6 +269,9 @@ async function handleSubmit() {
                 <Button variant="ghost" size="sm" @click="handleEdit(email)">
                   <Edit class="w-4 h-4" />
                 </Button>
+                <Button variant="ghost" size="sm" @click="handleOpenSend(email)">
+                  <Send class="w-4 h-4" />
+                </Button>
                 <Button variant="ghost" size="sm" @click="handleDelete(email.id)">
                   <Trash2 class="w-4 h-4" />
                 </Button>
@@ -237,7 +279,7 @@ async function handleSubmit() {
             </TableCell>
           </TableRow>
           <TableRow v-if="isEmpty">
-            <TableCell colspan="9" class="text-center text-muted-foreground py-12">
+            <TableCell colspan="11" class="text-center text-muted-foreground py-12">
               <div class="inline-flex flex-col items-center gap-2">
                 <svg
                   class="w-10 h-10 opacity-30"
@@ -292,6 +334,14 @@ async function handleSubmit() {
             <Input v-model="formData.host" placeholder="smtp.example.com" />
           </div>
           <div class="space-y-2">
+            <Label>端口</Label>
+            <Input v-model="formData.port" type="number" placeholder="465" />
+          </div>
+          <div class="space-y-2">
+            <Label>发件人名称</Label>
+            <Input v-model="formData.personal" placeholder="系统管理员" />
+          </div>
+          <div class="space-y-2">
             <Label>用户名 <span class="text-red-500">*</span></Label>
             <Input v-model="formData.username" placeholder="user@example.com" />
           </div>
@@ -320,6 +370,41 @@ async function handleSubmit() {
         <DialogFooter>
           <Button variant="outline" @click="showDialog = false">取消</Button>
           <Button @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="showSendDialog">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>发送邮件</DialogTitle>
+          <DialogDescription>使用当前邮箱配置发送一封测试邮件</DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 mt-4">
+          <div class="space-y-2">
+            <Label>收件人 <span class="text-red-500">*</span></Label>
+            <Input v-model="sendFormData.to" placeholder="recipient@example.com" />
+          </div>
+          <div class="space-y-2">
+            <Label>邮件标题 <span class="text-red-500">*</span></Label>
+            <Input v-model="sendFormData.title" placeholder="请输入邮件标题" />
+          </div>
+          <div class="space-y-2">
+            <Label>邮件内容</Label>
+            <Textarea
+              v-model="sendFormData.description"
+              placeholder="请输入邮件内容"
+              rows="5"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showSendDialog = false">取消</Button>
+          <Button :disabled="sending" @click="handleSendSubmit">
+            {{ sending ? '发送中...' : '发送' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

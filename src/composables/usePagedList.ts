@@ -1,5 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import type { PageResult } from '@/types'
+import { DEFAULT_PAGE_SIZE } from '@/constants/app'
 
 export interface PagedQuery {
   pageNumber: number
@@ -37,7 +38,7 @@ export interface PagedListOptions<T, P extends Record<string, unknown>> {
 export function usePagedList<T, P extends Record<string, unknown> = Record<string, never>>(
   options: PagedListOptions<T, P>,
 ) {
-  const { fetcher, params, pageSize: initialPageSize = 10, immediate = true } = options
+  const { fetcher, params, pageSize: initialPageSize = DEFAULT_PAGE_SIZE, immediate = true } = options
 
   const list = ref([]) as Ref<T[]>
   const loading = ref(false)

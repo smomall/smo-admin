@@ -1,6 +1,8 @@
 import { ref, watch } from 'vue'
 import { useFetch } from '@vueuse/core'
 import { getCookie } from './useCookie'
+import { STORAGE_KEYS } from '@/constants/storage'
+import { LOGIN_PATH } from '@/constants/app'
 
 // ────────────────────────────────────────────────────────────
 // 共享类型（useRequest 通过 re-export 复用）
@@ -26,8 +28,6 @@ export interface CsrfToken {
 // ────────────────────────────────────────────────────────────
 
 const BASE_URL = import.meta.env.VITE_API_PREFIX || '/api'
-const TOKEN_KEY = 'token'
-const LOGIN_PATH = '/login'
 
 const CSRF_TIMEOUT = 5_000
 const XSRF_COOKIE_NAME = 'XSRF-TOKEN'
@@ -44,12 +44,12 @@ const XSRF_HEADER_NAME = 'X-XSRF-TOKEN'
 //      不再直接触碰 localStorage。
 // ────────────────────────────────────────────────────────────
 
-const token = ref<string>(localStorage.getItem(TOKEN_KEY) ?? '')
+const token = ref<string>(localStorage.getItem(STORAGE_KEYS.TOKEN) ?? '')
 
 // 双向同步：token 变化 → 写 localStorage
 watch(token, (val) => {
-  if (val) localStorage.setItem(TOKEN_KEY, val)
-  else localStorage.removeItem(TOKEN_KEY)
+  if (val) localStorage.setItem(STORAGE_KEYS.TOKEN, val)
+  else localStorage.removeItem(STORAGE_KEYS.TOKEN)
 })
 
 // ────────────────────────────────────────────────────────────

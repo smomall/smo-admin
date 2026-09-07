@@ -23,6 +23,7 @@ import {
 import SiteSelector from './SiteSelector.vue'
 import SidebarMenuNestedItem from './SidebarMenuNestedItem.vue'
 import NotificationBell from './NotificationBell.vue'
+import { useTheme } from '@/composables/useTheme'
 import { APP_TITLE } from '@/constants/app'
 import {
   Shield,
@@ -36,7 +37,6 @@ import {
   RefreshCw,
   Moon,
   Sun,
-  LayoutDashboard,
   Settings,
   Users,
   Key,
@@ -65,6 +65,7 @@ import {
   Settings2,
   HardDrive,
   FolderOpen,
+  LayoutDashboard,
 } from '@lucide/vue'
 import { usePermissionStore } from '@/stores/permission'
 import { useTabStore } from '@/stores/tab'
@@ -80,28 +81,9 @@ const userStore = useUserStore()
 const expandedMenus = ref<Set<string>>(new Set())
 const refreshKey = ref(0)
 const isRefreshing = ref(false)
+const siteSelectorOpen = ref(false)
 
-document.documentElement.classList.toggle(
-  'dark',
-  localStorage.theme === 'dark' ||
-    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
-)
-
-const isDark = ref(
-  localStorage.theme === 'dark' ||
-    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
-)
-
-function toggleTheme() {
-  isDark.value = !isDark.value
-  if (isDark.value) {
-    localStorage.theme = 'dark'
-    document.documentElement.classList.add('dark')
-  } else {
-    localStorage.theme = 'light'
-    document.documentElement.classList.remove('dark')
-  }
-}
+const { isDark, toggleTheme } = useTheme()
 
 const iconMap: Record<string, unknown> = {
   LayoutDashboard,
@@ -293,7 +275,14 @@ onMounted(async () => {
       >
         <SidebarTrigger />
 
-        <SiteSelector />
+        <button
+          class="p-2 rounded-md hover:bg-secondary hover:text-primary transition-all duration-200"
+          @click="siteSelectorOpen = true"
+          title="选择站点"
+        >
+          <Globe class="w-4 h-4" />
+        </button>
+        <SiteSelector v-model:open="siteSelectorOpen" />
 
         <button
           class="p-2 rounded-md hover:bg-secondary hover:text-primary transition-all duration-200"

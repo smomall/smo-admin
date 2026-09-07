@@ -7,6 +7,7 @@ import type {
   UseFetchReturn,
 } from '@vueuse/core'
 import { useMessageDialog } from './useMessageDialog'
+import { REQUEST_TIMEOUT } from '@/constants/app'
 import {
   BASE_URL,
   getToken,
@@ -37,7 +38,8 @@ export interface ApiResponseBackCompat<T = unknown> {
 // 常量（HTTP/业务层特定，不属于 useAuth 的会话概念）
 // ────────────────────────────────────────────────────────────
 
-const REQUEST_TIMEOUT = 15_000
+const REQUEST_TIMEOUT_FALLBACK = 15_000
+const _timeout = REQUEST_TIMEOUT || REQUEST_TIMEOUT_FALLBACK
 const AUTH_PREFIX = '/auth/'
 const SUCCESS_CODE = 200
 const UNAUTHORIZED_CODE = 401
@@ -175,7 +177,7 @@ async function retryAfterRefresh(
 const _fetch = createFetch({
   baseUrl: BASE_URL,
   options: {
-    timeout: REQUEST_TIMEOUT,
+    timeout: _timeout,
 
     async beforeFetch({ options }: BeforeFetchContext) {
       const headers: Record<string, string> = {

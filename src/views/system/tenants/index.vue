@@ -204,7 +204,7 @@ async function handleSubmit() {
 function getPackageName(packageId: string | undefined) {
   if (!packageId) return '-'
   const pkg = packages.value.find((p) => p.id === packageId)
-  return pkg ? pkg.name : packageId
+  return pkg ? pkg.title : packageId
 }
 </script>
 
@@ -244,7 +244,7 @@ function getPackageName(packageId: string | undefined) {
           <SelectContent>
             <SelectItem value="__all__">全部套餐</SelectItem>
             <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
-              {{ pkg.name }}
+              {{ pkg.title }}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -386,7 +386,7 @@ function getPackageName(packageId: string | undefined) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
-                  {{ pkg.name }}
+                  {{ pkg.title }}
                 </SelectItem>
               </SelectContent>
             </Select>

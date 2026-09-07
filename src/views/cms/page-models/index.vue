@@ -851,7 +851,7 @@ async function handleDeleteIndex(index: PageModelFieldIndex) {
   const ok = await confirm('删除索引', `确认删除索引「${index.indexName}」吗？`)
   if (!ok) return
   try {
-    if (index.id) await pageModelFieldIndexApi.remove(index.id)
+    if (index.id) await pageModelFieldIndexApi.delete(index.id)
     showSuccess('删除成功')
     await reloadIndexes()
   } catch {

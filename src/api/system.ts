@@ -23,6 +23,7 @@ import type {
 } from '@/types'
 import { useRequest } from '@/composables/useRequest'
 import { buildQuery } from './query'
+import { createCrudApi, createTreeCrudApi } from './factory'
 
 // ================================================
 // 用户管理 API
@@ -148,42 +149,7 @@ export const userApi = {
 // 角色管理 API
 // ================================================
 export const roleApi = {
-  // 获取角色列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    name?: string
-    code?: string
-    status?: string
-  }) => {
-    return useRequest<PageResult<Role>>(`/roles/page${buildQuery(params)}`).json()
-  },
-
-  getAll: () => {
-    return useRequest<Role[]>('/roles').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Role>(`/roles/${id}`).json()
-  },
-
-  create: (data: Partial<Role>) => {
-    return useRequest('/roles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Role>) => {
-    return useRequest(`/roles/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/roles/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<Role, { name?: string; code?: string; status?: string }>('/roles'),
 
   assignPermissions: (id: string, permissionIds: string[]) => {
     return useRequest(`/roles/${id}/permissions`, {
@@ -223,42 +189,24 @@ export const roleApi = {
 // 菜单管理 API
 // ================================================
 export const menuApi = {
-  list: () => {
-    return useRequest<Menu[]>('/menus').json()
-  },
+  // 菜单列表为全量（不分页），用 getAll 语义
+  list: () => useRequest<Menu[]>('/menus').json(),
+  getAll: () => useRequest<Menu[]>('/menus').json(),
 
-  tree: () => {
-    return useRequest<Menu[]>('/menus/tree').json()
-  },
+  tree: () => useRequest<Menu[]>('/menus/tree').json(),
 
-  getById: (id: string) => {
-    return useRequest<Menu>(`/menus/${id}`).json()
-  },
+  getById: (id: string) => useRequest<Menu>(`/menus/${id}`).json(),
 
-  create: (data: Partial<Menu>) => {
-    return useRequest('/menus', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
+  create: (data: Partial<Menu>) =>
+    useRequest('/menus', { method: 'POST', body: JSON.stringify(data) }).json(),
 
-  update: (id: string, data: Partial<Menu>) => {
-    return useRequest(`/menus/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
+  update: (id: string, data: Partial<Menu>) =>
+    useRequest(`/menus/${id}`, { method: 'PUT', body: JSON.stringify(data) }).json(),
 
-  sort: (menus: Menu[]) => {
-    return useRequest('/menus/sort', {
-      method: 'PUT',
-      body: JSON.stringify(menus),
-    }).json()
-  },
+  sort: (menus: Menu[]) =>
+    useRequest('/menus/sort', { method: 'PUT', body: JSON.stringify(menus) }).json(),
 
-  delete: (id: string) => {
-    return useRequest(`/menus/${id}`, { method: 'DELETE' }).json()
-  },
+  delete: (id: string) => useRequest(`/menus/${id}`, { method: 'DELETE' }).json(),
 }
 
 // ================================================
@@ -313,78 +261,19 @@ export const permissionApi = {
 // 组织管理 API
 // ================================================
 export const organizationApi = {
-  list: () => {
-    return useRequest<Organization[]>('/organizations').json()
-  },
-
-  tree: () => {
-    return useRequest<Organization[]>('/organizations/tree').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Organization>(`/organizations/${id}`).json()
-  },
-
-  create: (data: Partial<Organization>) => {
-    return useRequest('/organizations', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Organization>) => {
-    return useRequest(`/organizations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/organizations/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createTreeCrudApi<Organization>('/organizations'),
 }
 
 // ================================================
 // 岗位管理 API
 // ================================================
 export const postApi = {
-  // 获取岗位列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Post, {
     name?: string
     code?: string
     organizationId?: string
     status?: string
-  }) => {
-    return useRequest<PageResult<Post>>(`/posts/page${buildQuery(params)}`).json()
-  },
-
-  getAll: () => {
-    return useRequest<Post[]>('/posts').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Post>(`/posts/${id}`).json()
-  },
-
-  create: (data: Partial<Post>) => {
-    return useRequest('/posts', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Post>) => {
-    return useRequest(`/posts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/posts/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/posts'),
 }
 
 // ================================================
@@ -454,6 +343,11 @@ export const dictApi = {
 
   select: (dictTypeCode: string) => {
     return useRequest<DictSelectResult>(`/dict/select/${dictTypeCode}`).json()
+  },
+
+  /** 一次性获取全部启用字典（按字典编码分组） */
+  all: () => {
+    return useRequest<Record<string, DictSelectResult>>('/dict/all').json()
   },
 }
 
@@ -527,47 +421,15 @@ export const configApi = {
 // 通知管理 API
 // ================================================
 export const noticeApi = {
-  // 获取通知列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Notice, {
     title?: string
     type?: string | number
     importance?: string | number
     status?: string | number
-  }) => {
-    return useRequest<PageResult<Notice>>(`/notices/page${buildQuery(params)}`).json()
-  },
+  }>('/notices'),
 
-  getById: (id: string) => {
-    return useRequest<Notice>(`/notices/${id}`).json()
-  },
-
-  create: (data: Partial<Notice>) => {
-    return useRequest('/notices', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Notice>) => {
-    return useRequest(`/notices/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/notices/${id}`, { method: 'DELETE' }).json()
-  },
-
-  publish: (id: string) => {
-    return useRequest(`/notices/${id}/publish`, { method: 'PUT' }).json()
-  },
-
-  unpublish: (id: string) => {
-    return useRequest(`/notices/${id}/unpublish`, { method: 'PUT' }).json()
-  },
+  publish: (id: string) => useRequest(`/notices/${id}/publish`, { method: 'PUT' }).json(),
+  unpublish: (id: string) => useRequest(`/notices/${id}/unpublish`, { method: 'PUT' }).json(),
 }
 
 // ================================================
@@ -700,82 +562,19 @@ export const logApi = {
 // 租户管理 API
 // ================================================
 export const tenantApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Tenant, {
     name?: string
     code?: string
     contactPerson?: string
     contactPhone?: string
     packageId?: string
     status?: string
-  }) => {
-    return useRequest<PageResult<Tenant>>(`/tenants/page${buildQuery(params)}`).json()
-  },
-
-  getAll: () => {
-    return useRequest<Tenant[]>('/tenants').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Tenant>(`/tenants/${id}`).json()
-  },
-
-  create: (data: Partial<Tenant>) => {
-    return useRequest('/tenants', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Tenant>) => {
-    return useRequest(`/tenants/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/tenants/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/tenants'),
 }
 
 // ================================================
 // 租户套餐管理 API
 // ================================================
 export const tenantPackageApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    name?: string
-    status?: string
-  }) => {
-    return useRequest<PageResult<TenantPackage>>(`/tenant-packages/page${buildQuery(params)}`).json()
-  },
-
-  getAll: () => {
-    return useRequest<TenantPackage[]>('/tenant-packages').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<TenantPackage>(`/tenant-packages/${id}`).json()
-  },
-
-  create: (data: Partial<TenantPackage>) => {
-    return useRequest('/tenant-packages', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<TenantPackage>) => {
-    return useRequest(`/tenant-packages/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/tenant-packages/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<TenantPackage, { name?: string; status?: string }>('/tenant-packages'),
 }

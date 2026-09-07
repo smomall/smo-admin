@@ -924,3 +924,10 @@ export interface ChatResource {
   createdAt?: string
   updatedAt?: string
 }
+
+export interface ChatMessage {
+  id?: string
+  type?: 'USER' | 'AI' | string
+  text?: string
+  [key: string]: unknown
+}

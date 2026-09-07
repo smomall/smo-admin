@@ -139,10 +139,14 @@ async function handleSubmit() {
     return
   }
   try {
+    const payload = {
+      ...formData.value,
+      port: formData.value.port ? Number(formData.value.port) : undefined,
+    }
     if (isEdit.value) {
-      await emailApi.update(formData.value.id, formData.value)
+      await emailApi.update(formData.value.id, payload)
     } else {
-      await emailApi.create(formData.value)
+      await emailApi.create(payload)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

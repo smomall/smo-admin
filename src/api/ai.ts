@@ -5,159 +5,53 @@ import type {
   KnowledgeBase,
   ChatSession,
   ChatResource,
+  ChatMessage,
   PageResult,
 } from '@/types'
 import { useRequest } from '@/composables/useRequest'
 import { buildQuery } from './query'
+import { createCrudApi } from './factory'
 
 // ================================================
 // 聊天模型 API
 // ================================================
 export const chatModelApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    modelName?: string
-    status?: string
-    projectId?: string
-  }) => {
-    return useRequest<PageResult<ChatModel>>(`/ai/chat/models/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<ChatModel>(`/ai/chat/models/${id}`).json()
-  },
-
-  create: (data: Partial<ChatModel>) => {
-    return useRequest('/ai/chat/models', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<ChatModel>) => {
-    return useRequest(`/ai/chat/models/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/ai/chat/models/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<ChatModel, { modelName?: string; status?: string; projectId?: string }>(
+    '/ai/chat/models',
+  ),
 }
 
 // ================================================
 // 智能体 API
 // ================================================
 export const chatAgentApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<ChatAgent, {
     agentName?: string
     status?: string
     projectId?: string
     knowledgeBaseId?: string
-  }) => {
-    return useRequest<PageResult<ChatAgent>>(`/ai/chat/agents/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<ChatAgent>(`/ai/chat/agents/${id}`).json()
-  },
-
-  create: (data: Partial<ChatAgent>) => {
-    return useRequest('/ai/chat/agents', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<ChatAgent>) => {
-    return useRequest(`/ai/chat/agents/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/ai/chat/agents/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/ai/chat/agents'),
 }
 
 // ================================================
 // 助手 API
 // ================================================
 export const chatAssistantApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<ChatAssistant, {
     assistantName?: string
     status?: string
     projectId?: string
     knowledgeBaseId?: string
-  }) => {
-    return useRequest<PageResult<ChatAssistant>>(`/ai/chat/assistants/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<ChatAssistant>(`/ai/chat/assistants/${id}`).json()
-  },
-
-  create: (data: Partial<ChatAssistant>) => {
-    return useRequest('/ai/chat/assistants', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<ChatAssistant>) => {
-    return useRequest(`/ai/chat/assistants/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/ai/chat/assistants/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/ai/chat/assistants'),
 }
 
 // ================================================
 // 知识库 API
 // ================================================
 export const knowledgeBaseApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    baseName?: string
-    status?: string
-    projectId?: string
-  }) => {
-    return useRequest<PageResult<KnowledgeBase>>(`/ai/knowledge/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<KnowledgeBase>(`/ai/knowledge/${id}`).json()
-  },
-
-  create: (data: Partial<KnowledgeBase>) => {
-    return useRequest('/ai/knowledge', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<KnowledgeBase>) => {
-    return useRequest(`/ai/knowledge/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/ai/knowledge/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<KnowledgeBase, { baseName?: string; status?: string; projectId?: string }>(
+    '/ai/knowledge',
+  ),
 
   upload: (id: string, file: File) => {
     const formData = new FormData()
@@ -173,53 +67,21 @@ export const knowledgeBaseApi = {
 // 会话 API
 // ================================================
 export const chatSessionApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    title?: string
-    sessionType?: string
-    aiId?: string
-  }) => {
-    return useRequest<PageResult<ChatSession>>(`/ai/chat/sessions/page${buildQuery(params)}`).json()
-  },
+  ...createCrudApi<ChatSession, { title?: string; sessionType?: string; aiId?: string }>(
+    '/ai/chat/sessions',
+  ),
 
-  getById: (id: string) => {
-    return useRequest<ChatSession>(`/ai/chat/sessions/${id}`).json()
-  },
-
-  create: (data: Partial<ChatSession>) => {
-    return useRequest('/ai/chat/sessions', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<ChatSession>) => {
-    return useRequest(`/ai/chat/sessions/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/ai/chat/sessions/${id}`, { method: 'DELETE' }).json()
-  },
-
-  getMessages: (id: string) => {
-    return useRequest<any[]>(`/ai/chat/sessions/${id}/messages`).json()
-  },
+  getMessages: (id: string) => useRequest<ChatMessage[]>(`/ai/chat/sessions/${id}/messages`).json(),
 }
 
 // ================================================
-// 会话资源 API
+// 会话资源 API（嵌套在会话下，路径为 /ai/chat/sessions/{sessionId}/resources）
 // ================================================
 export const chatResourceApi = {
-  list: (sessionId: string, params?: {
-    pageNumber?: number
-    pageSize?: number
-    fileId?: string
-  }) => {
-    return useRequest<PageResult<ChatResource>>(`/ai/chat/sessions/${sessionId}/resources/page${buildQuery(params)}`).json()
+  list: (sessionId: string, params?: { pageNumber?: number; pageSize?: number; fileId?: string }) => {
+    return useRequest<PageResult<ChatResource>>(
+      `/ai/chat/sessions/${sessionId}/resources/page${buildQuery(params)}`,
+    ).json()
   },
 
   getById: (sessionId: string, id: string) => {

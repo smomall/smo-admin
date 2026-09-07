@@ -4,7 +4,6 @@ import { formatDateTime } from '@/lib/utils'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Table,
   TableBody,
@@ -30,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Plus, Edit, Trash2, MessagesSquare, Eye } from '@lucide/vue'
-import type { ChatSession } from '@/types'
+import type { ChatSession, ChatMessage } from '@/types'
 import { chatSessionApi } from '@/api'
 import { usePagedList } from '@/composables/usePagedList'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
@@ -45,7 +44,7 @@ const searchType = ref<string>('__all__')
 const showDialog = ref(false)
 const isEdit = ref(false)
 const showMessagesDialog = ref(false)
-const currentMessages = ref<any[]>([])
+const currentMessages = ref<ChatMessage[]>([])
 const currentSessionTitle = ref('')
 
 const sessionTypeOptions = [

@@ -3,7 +3,6 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Table,
   TableBody,
@@ -12,30 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { CheckboxGroupRoot } from 'reka-ui'
-import { Plus, Edit, Trash2, User, Shield, Key } from '@lucide/vue'
+import { Plus, Edit, Trash2, Shield, Key } from '@lucide/vue'
 import type { User as UserType, Role, Organization, Post, UserProfile, UserAddress } from '@/types'
 import { userApi, roleApi, organizationApi, postApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
+import { DICT } from '@/constants/dict'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import OrganizationTree from '@/components/OrganizationTree.vue'
@@ -43,10 +24,10 @@ import OrganizationSelectItem from '@/components/OrganizationSelectItem.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: userStatusItems, getLabel: getStatusLabel } = useDict('user_status')
-const { items: genderItems } = useDict('user_gender')
-const { items: localeItems } = useDict('common_locale')
-const { getLabel: getRoleStatusLabel } = useDict('common_status')
+const { items: userStatusItems, getLabel: getStatusLabel } = useDict(DICT.USER_STATUS)
+const { items: genderItems } = useDict(DICT.USER_GENDER)
+const { items: localeItems } = useDict(DICT.COMMON_LOCALE)
+const { getLabel: getRoleStatusLabel } = useDict(DICT.COMMON_STATUS)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()

@@ -26,22 +26,19 @@ import type {
 } from '@/types'
 import { useRequest } from '@/composables/useRequest'
 import { buildQuery } from './query'
+import { createCrudApi } from './factory'
+import { MAX_PAGE_SIZE } from '@/constants/app'
 
 // ================================================
 // 文章管理 API
 // ================================================
 export const articleApi = {
-  // 获取文章列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Article, {
     title?: string
     categoryId?: string
     status?: string
     siteId?: string
-  }) => {
-    return useRequest<PageResult<Article>>(`/articles/page${buildQuery(params)}`).json()
-  },
+  }>('/articles'),
 
   // 游标搜索文章（下拉搜索、无限滚动）
   cursor: (params: {
@@ -50,45 +47,13 @@ export const articleApi = {
     lastId?: string
     lastPublishAt?: string
     pageSize?: number
-  }) => {
-    return useRequest<CursorResult<Article>>(`/articles/cursor${buildQuery(params)}`).json()
-  },
-
-  // 获取单个文章
-  getById: (id: string) => {
-    return useRequest<Article>(`/articles/${id}`).json()
-  },
-
-  // 创建文章
-  create: (data: Partial<Article>) => {
-    return useRequest('/articles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新文章
-  update: (id: string, data: Partial<Article>) => {
-    return useRequest(`/articles/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除文章
-  delete: (id: string) => {
-    return useRequest(`/articles/${id}`, { method: 'DELETE' }).json()
-  },
+  }) => useRequest<CursorResult<Article>>(`/articles/cursor${buildQuery(params)}`).json(),
 
   // 获取文章标签列表
-  listTags: (id: string) => {
-    return useRequest<Tag[]>(`/articles/${id}/tags`).json()
-  },
+  listTags: (id: string) => useRequest<Tag[]>(`/articles/${id}/tags`).json(),
 
   // 获取文章分类列表
-  listCategories: (id: string) => {
-    return useRequest<Category[]>(`/articles/${id}/categories`).json()
-  },
+  listCategories: (id: string) => useRequest<Category[]>(`/articles/${id}/categories`).json(),
 }
 
 // ================================================
@@ -149,7 +114,7 @@ export const pageMetaApi = {
   // 后端仅提供分页接口 GET /page/metas/page，按大页一次性加载后由前端分页
   list: (params?: { pageId?: string; pageNumber?: number; pageSize?: number }) => {
     return useRequest<PageResult<PageMeta>>(
-      `/page/metas/page${buildQuery({ pageNumber: 1, pageSize: 1000, ...params })}`,
+      `/page/metas/page${buildQuery({ pageNumber: 1, pageSize: MAX_PAGE_SIZE, ...params })}`,
     ).json()
   },
 
@@ -180,54 +145,16 @@ export const pageMetaApi = {
 // 分类管理 API
 // ================================================
 export const categoryApi = {
-  // 获取分类列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Category, {
     title?: string
     slug?: string
     status?: string
     siteId?: string
     parentId?: string
-  }) => {
-    return useRequest<PageResult<Category>>(`/categories/page${buildQuery(params)}`).json()
-  },
-
-  // 获取所有分类
-  getAll: () => {
-    return useRequest<Category[]>('/categories').json()
-  },
+  }>('/categories'),
 
   // 获取分类树（无限级）
-  tree: (siteId?: string) => {
-    return useRequest<Category[]>(`/categories/tree${buildQuery({ siteId })}`).json()
-  },
-
-  // 获取单个分类
-  getById: (id: string) => {
-    return useRequest<Category>(`/categories/${id}`).json()
-  },
-
-  // 创建分类
-  create: (data: Partial<Category>) => {
-    return useRequest('/categories', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新分类
-  update: (id: string, data: Partial<Category>) => {
-    return useRequest(`/categories/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除分类
-  delete: (id: string) => {
-    return useRequest(`/categories/${id}`, { method: 'DELETE' }).json()
-  },
+  tree: (siteId?: string) => useRequest<Category[]>(`/categories/tree${buildQuery({ siteId })}`).json(),
 }
 
 // ================================================
@@ -348,328 +275,87 @@ export const commentApi = {
 // 任务管理 API
 // ================================================
 export const jobApi = {
-  // 获取任务列表（分页）
-  list: (params?: { pageNumber?: number; pageSize?: number; title?: string; status?: string }) => {
-    return useRequest<PageResult<Job>>(`/jobs/page${buildQuery(params)}`).json()
-  },
+  ...createCrudApi<Job, { title?: string; status?: string }>('/jobs'),
 
-  // 获取单个任务
-  getById: (id: string) => {
-    return useRequest<Job>(`/jobs/${id}`).json()
-  },
-
-  // 创建任务
-  create: (data: Partial<Job>) => {
-    return useRequest('/jobs', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新任务
-  update: (id: string, data: Partial<Job>) => {
-    return useRequest(`/jobs/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除任务
-  delete: (id: string) => {
-    return useRequest(`/jobs/${id}`, { method: 'DELETE' }).json()
-  },
-
-  // 启动任务
-  start: (id: string) => {
-    return useRequest(`/jobs/${id}/start`, { method: 'PUT' }).json()
-  },
-
-  // 停止任务
-  stop: (id: string) => {
-    return useRequest(`/jobs/${id}/stop`, { method: 'PUT' }).json()
-  },
-
-  // 立即执行任务
-  execute: (id: string) => {
-    return useRequest(`/jobs/${id}/execute`, { method: 'PUT' }).json()
-  },
+  start: (id: string) => useRequest(`/jobs/${id}/start`, { method: 'PUT' }).json(),
+  stop: (id: string) => useRequest(`/jobs/${id}/stop`, { method: 'PUT' }).json(),
+  execute: (id: string) => useRequest(`/jobs/${id}/execute`, { method: 'PUT' }).json(),
 }
 
 // ================================================
 // 任务日志管理 API
 // ================================================
 export const taskLogApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<TaskLog, {
     jobId?: string
     status?: string
     message?: string
     startTime?: string
     endTime?: string
-  }) => {
-    return useRequest<PageResult<TaskLog>>(`/task-logs/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<TaskLog>(`/task-logs/${id}`).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/task-logs/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/task-logs'),
 }
 
 // ================================================
 // 邮件管理 API
 // ================================================
 export const emailApi = {
-  // 获取邮件配置列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    host?: string
-    username?: string
-    status?: string
-  }) => {
-    return useRequest<PageResult<Email>>(`/emails/page${buildQuery(params)}`).json()
-  },
+  ...createCrudApi<Email, { host?: string; username?: string; status?: string }>('/emails'),
 
-  // 获取单个邮件配置
-  getById: (id: string) => {
-    return useRequest<Email>(`/emails/${id}`).json()
-  },
-
-  // 创建邮件配置
-  create: (data: Partial<Email>) => {
-    return useRequest('/emails', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新邮件配置
-  update: (id: string, data: Partial<Email>) => {
-    return useRequest(`/emails/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除邮件配置
-  delete: (id: string) => {
-    return useRequest(`/emails/${id}`, { method: 'DELETE' }).json()
-  },
-
-  // 发送邮件（对应后端 POST /emails/{id}/send）
-  send: (id: string, params: { to: string; title: string; description: string }) => {
-    return useRequest(`/emails/${id}/send`, {
-      method: 'POST',
-      body: JSON.stringify(params),
-    }).json()
-  },
+  send: (id: string, params: { to: string; title: string; description: string }) =>
+    useRequest(`/emails/${id}/send`, { method: 'POST', body: JSON.stringify(params) }).json(),
 }
 
 // ================================================
 // 导航管理 API
 // ================================================
 export const navApi = {
-  // 导航项列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<NavItem, {
     title?: string
     status?: string
     siteId?: string
     groupId?: string
-  }) => {
-    return useRequest<PageResult<NavItem>>(`/nav/items/page${buildQuery(params)}`).json()
-  },
+  }>('/nav/items'),
 
   // 获取导航项树形结构
-  tree: (params?: { title?: string; status?: string; siteId?: string; groupId?: string }) => {
-    return useRequest<NavItem[]>(`/nav/items/tree${buildQuery(params)}`).json()
-  },
-
-  // 获取单个导航项
-  getById: (id: string) => {
-    return useRequest<NavItem>(`/nav/items/${id}`).json()
-  },
-
-  // 创建导航项
-  create: (data: Partial<NavItem>) => {
-    return useRequest('/nav/items', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新导航项
-  update: (id: string, data: Partial<NavItem>) => {
-    return useRequest(`/nav/items/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除导航项
-  remove: (id: string) => {
-    return useRequest(`/nav/items/${id}`, { method: 'DELETE' }).json()
-  },
+  tree: (params?: { title?: string; status?: string; siteId?: string; groupId?: string }) =>
+    useRequest<NavItem[]>(`/nav/items/tree${buildQuery(params)}`).json(),
 }
 
 // ================================================
 // 站点管理 API
 // ================================================
 export const siteApi = {
-  // 获取站点列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    title?: string
-    domain?: string
-    status?: string
-  }) => {
-    return useRequest<PageResult<Site>>(`/sites/page${buildQuery(params)}`).json()
-  },
-
-  // 获取所有站点
-  getAll: () => {
-    return useRequest<Site[]>('/sites').json()
-  },
-
-  // 获取单个站点
-  getById: (id: string) => {
-    return useRequest<Site>(`/sites/${id}`).json()
-  },
-
-  // 创建站点
-  create: (data: Partial<Site>) => {
-    return useRequest('/sites', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新站点
-  update: (id: string, data: Partial<Site>) => {
-    return useRequest(`/sites/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除站点
-  delete: (id: string) => {
-    return useRequest(`/sites/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<Site, { title?: string; domain?: string; status?: string }>('/sites'),
 }
 
 // ================================================
 // OSS客户端配置管理 API
 // ================================================
 export const ossClientConfigApi = {
-  // 获取OSS客户端配置列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<OssClientConfig, {
     configName?: string
     configKey?: string
     region?: string
     status?: string
-  }) => {
-    return useRequest<PageResult<OssClientConfig>>(
-      `/oss/client-configs/page${buildQuery(params)}`,
-    ).json()
-  },
-
-  // 获取所有OSS客户端配置
-  getAll: () => {
-    return useRequest<OssClientConfig[]>('/oss/client-configs').json()
-  },
-
-  // 获取单个OSS客户端配置
-  getById: (id: string) => {
-    return useRequest<OssClientConfig>(`/oss/client-configs/${id}`).json()
-  },
-
-  // 创建OSS客户端配置
-  create: (data: Partial<OssClientConfig>) => {
-    return useRequest('/oss/client-configs', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新OSS客户端配置
-  update: (id: string, data: Partial<OssClientConfig>) => {
-    return useRequest(`/oss/client-configs/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除OSS客户端配置
-  delete: (id: string) => {
-    return useRequest(`/oss/client-configs/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/oss/client-configs'),
 }
 
 // ================================================
 // OSS存储桶管理 API
 // ================================================
 export const ossBucketApi = {
-  // 获取OSS存储桶列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<OssBucket, {
     configId?: string
     bucketName?: string
     status?: string
-  }) => {
-    return useRequest<PageResult<OssBucket>>(`/oss/buckets/page${buildQuery(params)}`).json()
-  },
-
-  // 获取所有OSS存储桶
-  getAll: () => {
-    return useRequest<OssBucket[]>('/oss/buckets').json()
-  },
-
-  // 获取单个OSS存储桶
-  getById: (id: string) => {
-    return useRequest<OssBucket>(`/oss/buckets/${id}`).json()
-  },
-
-  // 创建OSS存储桶
-  create: (data: Partial<OssBucket>) => {
-    return useRequest('/oss/buckets', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新OSS存储桶
-  update: (id: string, data: Partial<OssBucket>) => {
-    return useRequest(`/oss/buckets/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除OSS存储桶
-  delete: (id: string) => {
-    return useRequest(`/oss/buckets/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/oss/buckets'),
 }
 
 // ================================================
 // OSS文件管理 API
 // ================================================
 export const ossFileApi = {
-  // 获取OSS文件列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<OssFile, {
     uploadId?: string
     configId?: string
     bucketId?: string
@@ -679,35 +365,7 @@ export const ossFileApi = {
     fileType?: string
     fileSubType?: string
     uploadStatus?: string
-  }) => {
-    return useRequest<PageResult<OssFile>>(`/oss/files/page${buildQuery(params)}`).json()
-  },
-
-  // 获取单个OSS文件
-  getById: (id: string) => {
-    return useRequest<OssFile>(`/oss/files/${id}`).json()
-  },
-
-  // 创建OSS文件记录
-  create: (data: Partial<OssFile>) => {
-    return useRequest('/oss/files', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 更新OSS文件记录
-  update: (id: string, data: Partial<OssFile>) => {
-    return useRequest(`/oss/files/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  // 删除OSS文件记录
-  delete: (id: string) => {
-    return useRequest(`/oss/files/${id}`, { method: 'DELETE' }).json()
-  },
+  }>('/oss/files'),
 }
 
 // ================================================
@@ -955,6 +613,12 @@ export const pageDataApi = {
   },
 
   // DELETE /page/data/{modelName}/{id} - 删除
+  delete: (modelName: string, id: string) => {
+    return useRequest(`/page/data/${encodeURIComponent(modelName)}/${id}`, {
+      method: 'DELETE',
+    }).json()
+  },
+  /** @deprecated 请使用 delete 替代 */
   remove: (modelName: string, id: string) => {
     return useRequest(`/page/data/${encodeURIComponent(modelName)}/${id}`, {
       method: 'DELETE',
@@ -1001,11 +665,21 @@ export const pageModelFieldIndexApi = {
   },
 
   // DELETE /page/model/field-indexes/{id} - 单删
+  delete: (id: string) => {
+    return useRequest(`/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
+  },
+  /** @deprecated 请使用 delete 替代 */
   remove: (id: string) => {
     return useRequest(`/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
   },
 
   // DELETE /page/model/field-indexes/batch/{ids} - 批量删
+  batchDelete: (ids: string[]) => {
+    return useRequest(`/page/model/field-indexes/batch/${ids.join(',')}`, {
+      method: 'DELETE',
+    }).json()
+  },
+  /** @deprecated 请使用 batchDelete 替代 */
   removeBatch: (ids: string[]) => {
     return useRequest(`/page/model/field-indexes/batch/${ids.join(',')}`, {
       method: 'DELETE',
@@ -1065,95 +739,32 @@ export const pageModelFieldIndexApi = {
 // 导航分组管理 API
 // ================================================
 export const navGroupApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    name?: string
-    code?: string
-    status?: string
-    siteId?: string
-  }) => {
-    return useRequest<PageResult<NavGroup>>(`/nav/groups/page${buildQuery(params)}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<NavGroup>(`/nav/groups/${id}`).json()
-  },
-
-  create: (data: Partial<NavGroup>) => {
-    return useRequest('/nav/groups', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<NavGroup>) => {
-    return useRequest(`/nav/groups/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/nav/groups/${id}`, { method: 'DELETE' }).json()
-  },
+  ...createCrudApi<NavGroup, { name?: string; code?: string; status?: string; siteId?: string }>(
+    '/nav/groups',
+  ),
 }
 
 // ================================================
 // 轮播图管理 API
 // ================================================
 export const carouselApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    title?: string
-    status?: string
-    siteId?: string
-  }) => {
-    return useRequest<PageResult<Carousel>>(`/carousels/page${buildQuery(params)}`).json()
-  },
+  ...createCrudApi<Carousel, { title?: string; status?: string; siteId?: string }>('/carousels'),
 
-  getAll: (siteId?: string) => {
-    return useRequest<Carousel[]>(`/carousels${buildQuery({ siteId })}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Carousel>(`/carousels/${id}`).json()
-  },
-
-  create: (data: Partial<Carousel>) => {
-    return useRequest('/carousels', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Carousel>) => {
-    return useRequest(`/carousels/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/carousels/${id}`, { method: 'DELETE' }).json()
-  },
+  // 按站点获取全量轮播图
+  getAll: (siteId?: string) =>
+    useRequest<Carousel[]>(`/carousels${buildQuery({ siteId })}`).json(),
 }
 
 // ================================================
 // 笔记管理 API
 // ================================================
 export const noteApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Note, {
     title?: string
     status?: string
     siteId?: string
     categoryId?: string
-  }) => {
-    return useRequest<PageResult<Note>>(`/notes/page${buildQuery(params)}`).json()
-  },
+  }>('/notes'),
 
   // 游标搜索笔记（下拉搜索、无限滚动）
   cursor: (params: {
@@ -1162,87 +773,27 @@ export const noteApi = {
     lastId?: string
     lastPublishAt?: string
     pageSize?: number
-  }) => {
-    return useRequest<CursorResult<Note>>(`/notes/cursor${buildQuery(params)}`).json()
-  },
-
-  getAll: () => {
-    return useRequest<Note[]>('/notes').json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Note>(`/notes/${id}`).json()
-  },
-
-  create: (data: Partial<Note>) => {
-    return useRequest('/notes', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Note>) => {
-    return useRequest(`/notes/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/notes/${id}`, { method: 'DELETE' }).json()
-  },
+  }) => useRequest<CursorResult<Note>>(`/notes/cursor${buildQuery(params)}`).json(),
 
   // 获取笔记标签列表
-  listTags: (id: string) => {
-    return useRequest<Tag[]>(`/notes/${id}/tags`).json()
-  },
+  listTags: (id: string) => useRequest<Tag[]>(`/notes/${id}/tags`).json(),
 
   // 获取笔记分类列表
-  listCategories: (id: string) => {
-    return useRequest<Category[]>(`/notes/${id}/categories`).json()
-  },
+  listCategories: (id: string) => useRequest<Category[]>(`/notes/${id}/categories`).json(),
 }
 
 // ================================================
 // 章节管理 API
 // ================================================
 export const chapterApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
+  ...createCrudApi<Chapter, {
     noteId?: string
     parentId?: string
     title?: string
     status?: string
-  }) => {
-    return useRequest<PageResult<Chapter>>(`/chapters/page${buildQuery(params)}`).json()
-  },
+  }>('/chapters'),
 
-  tree: (noteId: string) => {
-    return useRequest<Chapter[]>(`/chapters/tree?noteId=${noteId}`).json()
-  },
-
-  getById: (id: string) => {
-    return useRequest<Chapter>(`/chapters/${id}`).json()
-  },
-
-  create: (data: Partial<Chapter>) => {
-    return useRequest('/chapters', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  update: (id: string, data: Partial<Chapter>) => {
-    return useRequest(`/chapters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }).json()
-  },
-
-  delete: (id: string) => {
-    return useRequest(`/chapters/${id}`, { method: 'DELETE' }).json()
-  },
+  tree: (noteId: string) => useRequest<Chapter[]>(`/chapters/tree?noteId=${noteId}`).json(),
 }
 
 // ================================================

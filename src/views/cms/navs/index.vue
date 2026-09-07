@@ -286,7 +286,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除导航项', '确定要删除该导航项吗？其所有子导航项将一并删除。')
   if (!confirmed) return
   try {
-    await navApi.remove(id)
+    await navApi.delete(id)
     showSuccess('删除成功')
     if (viewMode.value === 'list') {
       reloadAfterRemove()

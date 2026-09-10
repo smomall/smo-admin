@@ -59,11 +59,10 @@ const {
   reload: reloadCarousels,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => carouselApi.list(query),
+  fetcher: (query) => carouselApi.list(siteId.value, query),
   params: () => ({
     title: searchKeyword.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-    siteId: siteId.value,
   }),
 })
 
@@ -123,7 +122,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除轮播图', '确定要删除该轮播图吗？')
   if (!confirmed) return
   try {
-    await carouselApi.delete(id)
+    await carouselApi.delete(siteId.value, id)
     showSuccess('删除成功')
     reloadAfterRemove()
   } catch {
@@ -138,14 +137,13 @@ async function handleSubmit() {
   }
   const submitData = {
     ...formData.value,
-    siteId: siteId.value,
     cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
-      await carouselApi.update(formData.value.id, submitData)
+      await carouselApi.update(siteId.value, formData.value.id, submitData)
     } else {
-      await carouselApi.create(submitData)
+      await carouselApi.create(siteId.value, submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

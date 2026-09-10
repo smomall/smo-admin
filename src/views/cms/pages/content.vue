@@ -33,7 +33,7 @@ async function fetchPage() {
   if (!pageId.value) return
   loading.value = true
   try {
-    const { data } = await pageApi.getById(pageId.value)
+    const { data } = await pageApi.getById(siteId.value, pageId.value)
     if (data.value) {
       pageTitle.value = data.value.title || ''
       formData.value.content = data.value.content || ''
@@ -53,7 +53,7 @@ async function handleSave() {
   }
   saving.value = true
   try {
-    await pageApi.update(pageId.value, {
+    await pageApi.update(siteId.value, pageId.value, {
       content: formData.value.content,
       contentType: formData.value.contentType,
     })

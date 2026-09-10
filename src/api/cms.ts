@@ -26,34 +26,37 @@ import type {
 } from '@/types'
 import { useRequest } from '@/composables/useRequest'
 import { buildQuery } from './query'
-import { createCrudApi } from './factory'
+import { createCrudApi, createSiteCrudApi, createSiteTreeCrudApi } from './factory'
 import { MAX_PAGE_SIZE } from '@/constants/app'
 
 // ================================================
 // 文章管理 API
 // ================================================
 export const articleApi = {
-  ...createCrudApi<Article, {
+  ...createSiteCrudApi<Article, {
     title?: string
     categoryId?: string
     status?: string
-    siteId?: string
   }>('/articles'),
 
   // 游标搜索文章（下拉搜索、无限滚动）
-  cursor: (params: {
-    title?: string
-    siteId?: string
-    lastId?: string
-    lastPublishAt?: string
-    pageSize?: number
-  }) => useRequest<CursorResult<Article>>(`/articles/cursor${buildQuery(params)}`).json(),
+  cursor: (
+    siteId: string,
+    params: {
+      title?: string
+      lastId?: string
+      lastPublishAt?: string
+      pageSize?: number
+    },
+  ) => useRequest<CursorResult<Article>>(`/sites/${siteId}/articles/cursor${buildQuery(params)}`).json(),
 
   // 获取文章标签列表
-  listTags: (id: string) => useRequest<Tag[]>(`/articles/${id}/tags`).json(),
+  listTags: (siteId: string, id: string) =>
+    useRequest<Tag[]>(`/sites/${siteId}/articles/${id}/tags`).json(),
 
   // 获取文章分类列表
-  listCategories: (id: string) => useRequest<Category[]>(`/articles/${id}/categories`).json(),
+  listCategories: (siteId: string, id: string) =>
+    useRequest<Category[]>(`/sites/${siteId}/articles/${id}/categories`).json(),
 }
 
 // ================================================
@@ -61,49 +64,51 @@ export const articleApi = {
 // ================================================
 export const pageApi = {
   // 获取页面列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    title?: string
-    slug?: string
-    status?: string
-    siteId?: string
-    parentId?: string
-    modelId?: string
-    pageType?: string
-  }) => {
-    return useRequest<PageResult<Page>>(`/pages/page${buildQuery(params)}`).json()
+  list: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      title?: string
+      slug?: string
+      status?: string
+      parentId?: string
+      modelId?: string
+      pageType?: string
+    },
+  ) => {
+    return useRequest<PageResult<Page>>(`/sites/${siteId}/pages/page${buildQuery(params)}`).json()
   },
 
   // 获取页面树
-  tree: (siteId?: string) => {
-    return useRequest<Page[]>(`/pages/tree${buildQuery({ siteId })}`).json()
+  tree: (siteId: string) => {
+    return useRequest<Page[]>(`/sites/${siteId}/pages/tree`).json()
   },
 
   // 获取单个页面
-  getById: (id: string) => {
-    return useRequest<Page>(`/pages/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<Page>(`/sites/${siteId}/pages/${id}`).json()
   },
 
   // 创建页面
-  create: (data: Partial<Page>) => {
-    return useRequest<Page>('/pages', {
+  create: (siteId: string, data: Partial<Page>) => {
+    return useRequest<Page>(`/sites/${siteId}/pages`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 更新页面（PUT /pages/{id}）
-  update: (id: string, data: Partial<Page>) => {
-    return useRequest(`/pages/${id}`, {
+  update: (siteId: string, id: string, data: Partial<Page>) => {
+    return useRequest(`/sites/${siteId}/pages/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 删除页面
-  delete: (id: string) => {
-    return useRequest(`/pages/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/pages/${id}`, { method: 'DELETE' }).json()
   },
 }
 
@@ -145,16 +150,12 @@ export const pageMetaApi = {
 // 分类管理 API
 // ================================================
 export const categoryApi = {
-  ...createCrudApi<Category, {
+  ...createSiteTreeCrudApi<Category, {
     title?: string
     slug?: string
     status?: string
-    siteId?: string
     parentId?: string
   }>('/categories'),
-
-  // 获取分类树（无限级）
-  tree: (siteId?: string) => useRequest<Category[]>(`/categories/tree${buildQuery({ siteId })}`).json(),
 }
 
 // ================================================
@@ -162,57 +163,61 @@ export const categoryApi = {
 // ================================================
 export const tagApi = {
   // 获取标签列表（分页）
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    title?: string
-    slug?: string
-    status?: string
-    siteId?: string
-  }) => {
-    return useRequest<PageResult<Tag>>(`/tags/page${buildQuery(params)}`).json()
+  list: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      title?: string
+      slug?: string
+      status?: string
+    },
+  ) => {
+    return useRequest<PageResult<Tag>>(`/sites/${siteId}/tags/page${buildQuery(params)}`).json()
   },
 
   // 游标搜索标签（下拉搜索、无限滚动）
-  cursor: (params: {
-    title?: string
-    siteId?: string
-    lastId?: string
-    lastPublishAt?: string
-    pageSize?: number
-  }) => {
-    return useRequest<CursorResult<Tag>>(`/tags/cursor${buildQuery(params)}`).json()
+  cursor: (
+    siteId: string,
+    params: {
+      title?: string
+      lastId?: string
+      lastPublishAt?: string
+      pageSize?: number
+    },
+  ) => {
+    return useRequest<CursorResult<Tag>>(`/sites/${siteId}/tags/cursor${buildQuery(params)}`).json()
   },
 
   // 获取所有标签
-  getAll: (siteId?: string) => {
-    return useRequest<Tag[]>(`/tags${buildQuery({ siteId })}`).json()
+  getAll: (siteId: string) => {
+    return useRequest<Tag[]>(`/sites/${siteId}/tags`).json()
   },
 
   // 获取单个标签
-  getById: (id: string) => {
-    return useRequest<Tag>(`/tags/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<Tag>(`/sites/${siteId}/tags/${id}`).json()
   },
 
   // 创建标签
-  create: (data: Partial<Tag>) => {
-    return useRequest('/tags', {
+  create: (siteId: string, data: Partial<Tag>) => {
+    return useRequest(`/sites/${siteId}/tags`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 更新标签
-  update: (id: string, data: Partial<Tag>) => {
-    return useRequest(`/tags/${id}`, {
+  update: (siteId: string, id: string, data: Partial<Tag>) => {
+    return useRequest(`/sites/${siteId}/tags/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 删除标签
-  delete: (id: string) => {
-    return useRequest(`/tags/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/tags/${id}`, { method: 'DELETE' }).json()
   },
 }
 
@@ -221,53 +226,58 @@ export const tagApi = {
 // ================================================
 export const commentApi = {
   // 获取顶级评论列表（分页）- 楼中楼评论的一级评论
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    siteId?: string
-    bizId?: string
-    bizType?: string
-    status?: string
-    sort?: string
-  }) => {
-    return useRequest<PageResult<Comment>>(`/comments/page${buildQuery(params)}`).json()
+  list: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      bizId?: string
+      bizType?: string
+      status?: string
+      sort?: string
+    },
+  ) => {
+    return useRequest<PageResult<Comment>>(`/sites/${siteId}/comments/page${buildQuery(params)}`).json()
   },
 
   // 获取子评论列表（分页）- 楼中楼评论的二级评论
-  subList: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    rootId?: string
-    status?: string
-    sort?: string
-  }) => {
-    return useRequest<PageResult<Comment>>(`/comments/sub/page${buildQuery(params)}`).json()
+  subList: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      rootId?: string
+      status?: string
+      sort?: string
+    },
+  ) => {
+    return useRequest<PageResult<Comment>>(`/sites/${siteId}/comments/sub/page${buildQuery(params)}`).json()
   },
 
   // 获取单个评论
-  getById: (id: string) => {
-    return useRequest<Comment>(`/comments/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<Comment>(`/sites/${siteId}/comments/${id}`).json()
   },
 
   // 创建评论
-  create: (data: Partial<Comment>) => {
-    return useRequest('/comments', {
+  create: (siteId: string, data: Partial<Comment>) => {
+    return useRequest(`/sites/${siteId}/comments`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 更新评论
-  update: (id: string, data: Partial<Comment>) => {
-    return useRequest(`/comments/${id}`, {
+  update: (siteId: string, id: string, data: Partial<Comment>) => {
+    return useRequest(`/sites/${siteId}/comments/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
   // 删除评论
-  delete: (id: string) => {
-    return useRequest(`/comments/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/comments/${id}`, { method: 'DELETE' }).json()
   },
 }
 
@@ -309,16 +319,11 @@ export const emailApi = {
 // 导航管理 API
 // ================================================
 export const navApi = {
-  ...createCrudApi<NavItem, {
+  ...createSiteTreeCrudApi<NavItem, {
     title?: string
     status?: string
-    siteId?: string
     groupId?: string
   }>('/nav/items'),
-
-  // 获取导航项树形结构
-  tree: (params?: { title?: string; status?: string; siteId?: string; groupId?: string }) =>
-    useRequest<NavItem[]>(`/nav/items/tree${buildQuery(params)}`).json(),
 }
 
 // ================================================
@@ -419,83 +424,85 @@ export const ossUploadApi = {
 export const pageModelApi = {
   // 分页查询页面模型，对应后端 @GetMapping("/page")
   // 参数严格对齐后端 PageModelController#page：
-  //   siteId/Long, modelCode, modelName, modelLabel, modelType, enabled/Boolean, status/Integer
+  //   modelCode, modelName, modelLabel, modelType, enabled/Boolean, status/Integer
   // （pageNumber/pageSize 由 usePagedList 合并注入，这里无需显式声明）
-  list: (params?: {
-    siteId?: string
-    modelCode?: string
-    modelName?: string
-    modelLabel?: string
-    modelType?: string
-    enabled?: boolean
-    status?: number
-    pageNumber?: number
-    pageSize?: number
-  }) => {
-    return useRequest<PageResult<PageModel>>(`/page/models/page${buildQuery(params)}`).json()
+  list: (
+    siteId: string,
+    params?: {
+      modelCode?: string
+      modelName?: string
+      modelLabel?: string
+      modelType?: string
+      enabled?: boolean
+      status?: number
+      pageNumber?: number
+      pageSize?: number
+    },
+  ) => {
+    return useRequest<PageResult<PageModel>>(`/sites/${siteId}/page/models/page${buildQuery(params)}`).json()
   },
 
-  getAll: () => {
-    return useRequest<PageModel[]>('/page/models').json()
+  getAll: (siteId: string) => {
+    return useRequest<PageModel[]>(`/sites/${siteId}/page/models`).json()
   },
 
-  getById: (id: string) => {
-    return useRequest<PageModel>(`/page/models/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<PageModel>(`/sites/${siteId}/page/models/${id}`).json()
   },
 
-  create: (data: Partial<PageModel>) => {
-    return useRequest('/page/models', {
+  create: (siteId: string, data: Partial<PageModel>) => {
+    return useRequest(`/sites/${siteId}/page/models`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
-  update: (id: string, data: Partial<PageModel>) => {
-    return useRequest(`/page/models/${id}`, {
+  update: (siteId: string, id: string, data: Partial<PageModel>) => {
+    return useRequest(`/sites/${siteId}/page/models/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
-  delete: (id: string) => {
-    return useRequest(`/page/models/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/models/${id}`, { method: 'DELETE' }).json()
   },
 
-  generateCreateTableDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/add/sql`).json()
+  generateCreateTableDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/add/sql`).json()
   },
 
-  executeCreateTable: (id: string) => {
-    return useRequest(`/page/models/${id}/add/execute`, {
+  executeCreateTable: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/models/${id}/add/execute`, {
       method: 'POST',
     }).json()
   },
 
-  generateFieldDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/modify/sql`).json()
+  generateFieldDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/modify/sql`).json()
   },
 
-  applyFieldDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/modify/execute`, {
+  applyFieldDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/modify/execute`, {
       method: 'POST',
     }).json()
   },
 
-  generateDropTableDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/remove/sql`).json()
+  generateDropTableDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/remove/sql`).json()
   },
 
-  dropTable: (id: string) => {
-    return useRequest(`/page/models/${id}/remove/execute`, { method: 'POST' }).json()
+  dropTable: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/models/${id}/remove/execute`, { method: 'POST' }).json()
   },
 
   // 模型级变更 DDL（表名/表注释变更，对比变更前快照与当前模型）
-  generateChangeDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/change/sql`).json()
+  generateChangeDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/change/sql`).json()
   },
 
-  applyChangeDdl: (id: string) => {
-    return useRequest<string>(`/page/models/${id}/change/execute`, {
+  applyChangeDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/models/${id}/change/execute`, {
       method: 'POST',
     }).json()
   },
@@ -505,25 +512,27 @@ export const pageModelApi = {
 // 页面模型字段管理 API
 // ================================================
 export const pageModelFieldApi = {
-  list: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    siteId?: string
-    modelId?: string
-    fieldCode?: string
-    fieldName?: string
-    fieldLabel?: string
-    fieldType?: string
-    status?: string
-  }) => {
+  list: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      modelId?: string
+      fieldCode?: string
+      fieldName?: string
+      fieldLabel?: string
+      fieldType?: string
+      status?: string
+    },
+  ) => {
     return useRequest<PageResult<PageModelField>>(
-      `/page/model/fields/page${buildQuery(params)}`,
+      `/sites/${siteId}/page/model/fields/page${buildQuery(params)}`,
     ).json()
   },
 
   // 对应后端 PageModelFieldController#list（GET /page/model/fields）
   // 后端支持 modelId / enabled / status(Set<Integer>) 筛选，前端不再做 filter
-  getAll: (modelId?: string, params?: { enabled?: boolean; status?: number[] }) => {
+  getAll: (siteId: string, modelId?: string, params?: { enabled?: boolean; status?: number[] }) => {
     const searchParams = new URLSearchParams()
     if (modelId) searchParams.set('modelId', modelId)
     if (params?.enabled !== undefined) searchParams.set('enabled', String(params.enabled))
@@ -533,60 +542,60 @@ export const pageModelFieldApi = {
     }
     const queryString = searchParams.toString()
     return useRequest<PageModelField[]>(
-      `/page/model/fields${queryString ? `?${queryString}` : ''}`,
+      `/sites/${siteId}/page/model/fields${queryString ? `?${queryString}` : ''}`,
     ).json()
   },
 
-  getById: (id: string) => {
-    return useRequest<PageModelField>(`/page/model/fields/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<PageModelField>(`/sites/${siteId}/page/model/fields/${id}`).json()
   },
 
-  create: (data: Partial<PageModelField>) => {
-    return useRequest('/page/model/fields', {
+  create: (siteId: string, data: Partial<PageModelField>) => {
+    return useRequest(`/sites/${siteId}/page/model/fields`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
-  update: (id: string, data: Partial<PageModelField>) => {
-    return useRequest(`/page/model/fields/${id}`, {
+  update: (siteId: string, id: string, data: Partial<PageModelField>) => {
+    return useRequest(`/sites/${siteId}/page/model/fields/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
-  delete: (id: string) => {
-    return useRequest(`/page/model/fields/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/fields/${id}`, { method: 'DELETE' }).json()
   },
 
   // 字段 DDL：按操作类型显式拆分（与模型级 add|modify|remove 命名一致）
   // 预览（查看）接口
-  generateAddDdl: (id: string) => {
-    return useRequest<string>(`/page/model/fields/${id}/add/sql`).json()
+  generateAddDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/fields/${id}/add/sql`).json()
   },
-  generateModifyDdl: (id: string) => {
-    return useRequest<string>(`/page/model/fields/${id}/modify/sql`).json()
+  generateModifyDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/fields/${id}/modify/sql`).json()
   },
-  generateRemoveDdl: (id: string) => {
-    return useRequest<string>(`/page/model/fields/${id}/remove/sql`).json()
+  generateRemoveDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/fields/${id}/remove/sql`).json()
   },
   // 执行接口
-  executeAddDdl: (id: string) => {
-    return useRequest(`/page/model/fields/${id}/add/execute`, { method: 'POST' }).json()
+  executeAddDdl: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/fields/${id}/add/execute`, { method: 'POST' }).json()
   },
-  executeModifyDdl: (id: string) => {
-    return useRequest(`/page/model/fields/${id}/modify/execute`, { method: 'POST' }).json()
+  executeModifyDdl: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/fields/${id}/modify/execute`, { method: 'POST' }).json()
   },
-  executeRemoveDdl: (id: string) => {
-    return useRequest(`/page/model/fields/${id}/remove/execute`, { method: 'POST' }).json()
+  executeRemoveDdl: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/fields/${id}/remove/execute`, { method: 'POST' }).json()
   },
 
   // 字段变更 DDL（列重命名/类型/注释变更，对比变更前快照与当前字段）
-  generateChangeDdl: (id: string) => {
-    return useRequest<string>(`/page/model/fields/${id}/change/sql`).json()
+  generateChangeDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/fields/${id}/change/sql`).json()
   },
-  applyChangeDdl: (id: string) => {
-    return useRequest<string>(`/page/model/fields/${id}/change/execute`, {
+  applyChangeDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/fields/${id}/change/execute`, {
       method: 'POST',
     }).json()
   },
@@ -649,87 +658,89 @@ export const pageDataApi = {
 // ================================================
 export const pageModelFieldIndexApi = {
   // POST /page/model/field-indexes - 新增
-  create: (data: Partial<PageModelFieldIndex>) => {
-    return useRequest('/page/model/field-indexes', {
+  create: (siteId: string, data: Partial<PageModelFieldIndex>) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes`, {
       method: 'POST',
       body: JSON.stringify(data),
     }).json()
   },
 
   // PUT /page/model/field-indexes/{id} - 修改
-  update: (id: string, data: Partial<PageModelFieldIndex>) => {
-    return useRequest(`/page/model/field-indexes/${id}`, {
+  update: (siteId: string, id: string, data: Partial<PageModelFieldIndex>) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()
   },
 
   // DELETE /page/model/field-indexes/{id} - 单删
-  delete: (id: string) => {
-    return useRequest(`/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
+  delete: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
   },
   /** @deprecated 请使用 delete 替代 */
-  remove: (id: string) => {
-    return useRequest(`/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
+  remove: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/${id}`, { method: 'DELETE' }).json()
   },
 
   // DELETE /page/model/field-indexes/batch/{ids} - 批量删
-  batchDelete: (ids: string[]) => {
-    return useRequest(`/page/model/field-indexes/batch/${ids.join(',')}`, {
+  batchDelete: (siteId: string, ids: string[]) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/batch/${ids.join(',')}`, {
       method: 'DELETE',
     }).json()
   },
   /** @deprecated 请使用 batchDelete 替代 */
-  removeBatch: (ids: string[]) => {
-    return useRequest(`/page/model/field-indexes/batch/${ids.join(',')}`, {
+  removeBatch: (siteId: string, ids: string[]) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/batch/${ids.join(',')}`, {
       method: 'DELETE',
     }).json()
   },
 
-  // GET /page/model/field-indexes - 列表（可按 modelId/siteId 过滤）
-  list: (params?: { modelId?: string; siteId?: string }) => {
+  // GET /page/model/field-indexes - 列表（可按 modelId 过滤）
+  list: (siteId: string, params?: { modelId?: string }) => {
     return useRequest<PageModelFieldIndex[]>(
-      `/page/model/field-indexes${buildQuery(params)}`,
+      `/sites/${siteId}/page/model/field-indexes${buildQuery(params)}`,
     ).json()
   },
 
   // GET /page/model/field-indexes/{id} - 详情
-  getById: (id: string) => {
-    return useRequest<PageModelFieldIndex>(`/page/model/field-indexes/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<PageModelFieldIndex>(`/sites/${siteId}/page/model/field-indexes/${id}`).json()
   },
 
   // GET /page/model/field-indexes/page - 分页
-  page: (params?: {
-    pageNumber?: number
-    pageSize?: number
-    modelId?: string
-    siteId?: string
-    indexType?: string
-    indexName?: string
-  }) => {
+  page: (
+    siteId: string,
+    params?: {
+      pageNumber?: number
+      pageSize?: number
+      modelId?: string
+      indexType?: string
+      indexName?: string
+    },
+  ) => {
     return useRequest<PageResult<PageModelFieldIndex>>(
-      `/page/model/field-indexes/page${buildQuery(params)}`,
+      `/sites/${siteId}/page/model/field-indexes/page${buildQuery(params)}`,
     ).json()
   },
 
   // ========== 索引 DDL（预览 + 执行） ==========
   // GET /page/model/field-indexes/{id}/create/sql
-  generateCreateDdl: (id: string) => {
-    return useRequest<string>(`/page/model/field-indexes/${id}/create/sql`).json()
+  generateCreateDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/field-indexes/${id}/create/sql`).json()
   },
   // POST /page/model/field-indexes/{id}/create/execute
-  executeCreateDdl: (id: string) => {
-    return useRequest(`/page/model/field-indexes/${id}/create/execute`, {
+  executeCreateDdl: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/${id}/create/execute`, {
       method: 'POST',
     }).json()
   },
   // GET /page/model/field-indexes/{id}/drop/sql
-  generateDropDdl: (id: string) => {
-    return useRequest<string>(`/page/model/field-indexes/${id}/drop/sql`).json()
+  generateDropDdl: (siteId: string, id: string) => {
+    return useRequest<string>(`/sites/${siteId}/page/model/field-indexes/${id}/drop/sql`).json()
   },
   // POST /page/model/field-indexes/{id}/drop/execute
-  executeDropDdl: (id: string) => {
-    return useRequest(`/page/model/field-indexes/${id}/drop/execute`, {
+  executeDropDdl: (siteId: string, id: string) => {
+    return useRequest(`/sites/${siteId}/page/model/field-indexes/${id}/drop/execute`, {
       method: 'POST',
     }).json()
   },
@@ -739,7 +750,7 @@ export const pageModelFieldIndexApi = {
 // 导航分组管理 API
 // ================================================
 export const navGroupApi = {
-  ...createCrudApi<NavGroup, { name?: string; code?: string; status?: string; siteId?: string }>(
+  ...createSiteCrudApi<NavGroup, { name?: string; code?: string; status?: string }>(
     '/nav/groups',
   ),
 }
@@ -748,64 +759,64 @@ export const navGroupApi = {
 // 轮播图管理 API
 // ================================================
 export const carouselApi = {
-  ...createCrudApi<Carousel, { title?: string; status?: string; siteId?: string }>('/carousels'),
-
-  // 按站点获取全量轮播图
-  getAll: (siteId?: string) =>
-    useRequest<Carousel[]>(`/carousels${buildQuery({ siteId })}`).json(),
+  ...createSiteCrudApi<Carousel, { title?: string; status?: string }>('/carousels'),
 }
 
 // ================================================
 // 笔记管理 API
 // ================================================
 export const noteApi = {
-  ...createCrudApi<Note, {
+  ...createSiteCrudApi<Note, {
     title?: string
     status?: string
-    siteId?: string
     categoryId?: string
   }>('/notes'),
 
   // 游标搜索笔记（下拉搜索、无限滚动）
-  cursor: (params: {
-    title?: string
-    siteId?: string
-    lastId?: string
-    lastPublishAt?: string
-    pageSize?: number
-  }) => useRequest<CursorResult<Note>>(`/notes/cursor${buildQuery(params)}`).json(),
+  cursor: (
+    siteId: string,
+    params: {
+      title?: string
+      lastId?: string
+      lastPublishAt?: string
+      pageSize?: number
+    },
+  ) => useRequest<CursorResult<Note>>(`/sites/${siteId}/notes/cursor${buildQuery(params)}`).json(),
 
   // 获取笔记标签列表
-  listTags: (id: string) => useRequest<Tag[]>(`/notes/${id}/tags`).json(),
+  listTags: (siteId: string, id: string) =>
+    useRequest<Tag[]>(`/sites/${siteId}/notes/${id}/tags`).json(),
 
   // 获取笔记分类列表
-  listCategories: (id: string) => useRequest<Category[]>(`/notes/${id}/categories`).json(),
+  listCategories: (siteId: string, id: string) =>
+    useRequest<Category[]>(`/sites/${siteId}/notes/${id}/categories`).json(),
 }
 
 // ================================================
 // 章节管理 API
 // ================================================
 export const chapterApi = {
-  ...createCrudApi<Chapter, {
+  ...createSiteTreeCrudApi<Chapter, {
     noteId?: string
     parentId?: string
     title?: string
     status?: string
   }>('/chapters'),
 
-  tree: (noteId: string) => useRequest<Chapter[]>(`/chapters/tree?noteId=${noteId}`).json(),
+  tree: (siteId: string, noteId: string) =>
+    useRequest<Chapter[]>(`/sites/${siteId}/chapters/tree?noteId=${noteId}`).json(),
 }
 
 // ================================================
 // 文档管理 API（章节与文档一对一，文档 id 复用章节 id，仅保留按章节 id 读取/更新正文）
 // ================================================
 export const documentApi = {
-  getById: (id: string) => {
-    return useRequest<Document>(`/documents/${id}`).json()
+  getById: (siteId: string, id: string) => {
+    return useRequest<Document>(`/sites/${siteId}/documents/${id}`).json()
   },
 
-  update: (id: string, data: Partial<Document>) => {
-    return useRequest(`/documents/${id}`, {
+  update: (siteId: string, id: string, data: Partial<Document>) => {
+    return useRequest(`/sites/${siteId}/documents/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }).json()

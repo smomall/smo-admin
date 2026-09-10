@@ -73,12 +73,11 @@ const {
   reload: reloadCategories,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => categoryApi.list(query),
+  fetcher: (query) => categoryApi.list(siteId.value, query),
   params: () => ({
     title: searchKeyword.value,
     slug: searchSlug.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-    siteId: siteId.value,
     parentId: selectedCategoryId.value || '',
   }),
 })
@@ -190,7 +189,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除分类', '确定要删除该分类吗？')
   if (!confirmed) return
   try {
-    await categoryApi.delete(id)
+    await categoryApi.delete(siteId.value, id)
     showSuccess('删除成功')
     // 若删除的是当前选中的分类，清除选中状态避免用不存在的 parentId 筛选
     if (selectedCategoryId.value === id) {
@@ -213,15 +212,14 @@ async function handleSubmit() {
   }
   const submitData = {
     ...formData.value,
-    siteId: siteId.value,
     parentId: formData.value.parentId,
     cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
-      await categoryApi.update(formData.value.id, submitData)
+      await categoryApi.update(siteId.value, formData.value.id, submitData)
     } else {
-      await categoryApi.create(submitData)
+      await categoryApi.create(siteId.value, submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

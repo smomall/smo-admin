@@ -283,24 +283,22 @@ const {
   search: handleSearch,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => pageApi.list(query),
+  fetcher: (query) => pageApi.list(siteId.value, query),
   params: () => ({
     title: searchTitle.value,
     slug: searchSlug.value,
     modelId: searchModelId.value === '__all__' ? '' : searchModelId.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
     pageType: searchPageType.value === '__all__' ? '' : searchPageType.value,
-    siteId: siteId.value,
     parentId: selectedParentId.value || '',
   }),
 })
 
 async function fetchPageModels() {
   try {
-    const { data } = await pageModelApi.list({
+    const { data } = await pageModelApi.list(siteId.value, {
       pageNumber: 1,
       pageSize: 100,
-      siteId: siteId.value,
       enabled: true,
     })
     if (data.value) {
@@ -351,7 +349,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除页面', '确定要删除该页面吗？')
   if (!confirmed) return
   try {
-    await pageApi.delete(id)
+    await pageApi.delete(siteId.value, id)
     showSuccess('删除成功')
     // 删除的是当前选中的树节点时清空筛选，避免列表仍按已删除的 parentId 过滤而空白
     if (selectedParentId.value === id) {

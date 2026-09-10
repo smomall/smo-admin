@@ -122,7 +122,7 @@ const coverPreviewUrl = ref('')
 async function fetchArticle(id: string) {
   loading.value = true
   try {
-    const { data } = await articleApi.getById(id)
+    const { data } = await articleApi.getById(siteId.value, id)
     if (data.value) {
       const article = data.value
       formData.value = {
@@ -159,8 +159,8 @@ async function fetchArticle(id: string) {
 async function fetchRelations(id: string) {
   try {
     const [tagsRes, catsRes] = await Promise.all([
-      articleApi.listTags(id),
-      articleApi.listCategories(id),
+      articleApi.listTags(siteId.value, id),
+      articleApi.listCategories(siteId.value, id),
     ])
     if (tagsRes.data.value) {
       selectedTagNames.value = tagsRes.data.value.map((t) => t.title)
@@ -182,21 +182,20 @@ async function handleSave() {
   const submitData = {
     ...formData.value,
     categoryId: formData.value.categoryId === '__none__' ? '' : formData.value.categoryId,
-    siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,
     cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
-      await articleApi.update(formData.value.id, submitData)
+      await articleApi.update(siteId.value, formData.value.id, submitData)
     } else {
-      await articleApi.create(submitData)
+      await articleApi.create(siteId.value, submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showSettingsDialog.value = false
     if (!isEdit.value && submitData.title) {
-      const { data: listData } = await articleApi.list({
+      const { data: listData } = await articleApi.list(siteId.value, {
         pageNumber: 1,
         pageSize: 1,
         title: submitData.title,

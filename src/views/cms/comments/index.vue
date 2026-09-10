@@ -85,9 +85,8 @@ const {
   reload: reloadComments,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => commentApi.list(query),
+  fetcher: (query) => commentApi.list(siteId.value, query),
   params: () => ({
-    siteId: siteId.value,
     bizId: searchBizId.value,
     bizType: searchBizType.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
@@ -117,7 +116,7 @@ const formData = ref({
 async function fetchSubComments(rootId: string, pageNumber = 1) {
   subCurrentPage.value = pageNumber
   try {
-    const { data } = await commentApi.subList({
+    const { data } = await commentApi.subList(siteId.value, {
       pageNumber,
       pageSize: subPageSize.value,
       rootId,
@@ -216,7 +215,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除评论', '确定要删除该评论吗？')
   if (!confirmed) return
   try {
-    await commentApi.delete(id)
+    await commentApi.delete(siteId.value, id)
     showSuccess('删除成功')
     reloadAfterRemove()
   } catch {
@@ -231,13 +230,12 @@ async function handleSubmit() {
   }
   const submitData = {
     ...formData.value,
-    siteId: siteId.value,
   }
   try {
     if (isEdit.value) {
-      await commentApi.update(formData.value.id, submitData)
+      await commentApi.update(siteId.value, formData.value.id, submitData)
     } else {
-      await commentApi.create(submitData)
+      await commentApi.create(siteId.value, submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

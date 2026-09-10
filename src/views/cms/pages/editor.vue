@@ -212,7 +212,7 @@ async function handleSaveMeta() {
 async function fetchPage(id: string) {
   loading.value = true
   try {
-    const { data } = await pageApi.getById(id)
+    const { data } = await pageApi.getById(props.siteId, id)
     if (data.value) {
       const page = data.value
       formData.value = {
@@ -243,10 +243,9 @@ async function fetchPage(id: string) {
 
 async function fetchPageModels() {
   try {
-    const { data } = await pageModelApi.list({
+    const { data } = await pageModelApi.list(props.siteId, {
       pageNumber: 1,
       pageSize: 100,
-      siteId: props.siteId,
       enabled: true,
     })
     if (data.value) {
@@ -331,18 +330,17 @@ async function handleSave() {
     sort: formData.value.sort,
     publishAt: formData.value.publishAt,
     status: formData.value.status,
-    siteId: props.siteId,
     seoTitle: formData.value.seoTitle,
     seoKeywords: formData.value.seoKeywords,
     seoDescription: formData.value.seoDescription,
   }
   try {
     if (isEdit.value) {
-      await pageApi.update(pageSubmitData.id, pageSubmitData)
+      await pageApi.update(props.siteId, pageSubmitData.id, pageSubmitData)
       showSuccess('更新成功')
     } else {
       // 后端 create 返回 R<Page>（含生成的 id），直接使用，避免按标题回查的歧义
-      const { data: createdData } = await pageApi.create(pageSubmitData)
+      const { data: createdData } = await pageApi.create(props.siteId, pageSubmitData)
       if (createdData.value?.id) {
         internalPageId.value = createdData.value.id
         formData.value.id = createdData.value.id

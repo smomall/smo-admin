@@ -185,9 +185,8 @@ const {
   reload: reloadPageModels,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => pageModelApi.list(query),
+  fetcher: (query) => pageModelApi.list(siteId.value, query),
   params: () => ({
-    siteId: siteId.value,
     modelCode: searchModelCode.value,
     modelName: searchModelName.value,
     // 全部不传；启用/禁用按后端 Boolean 类型传 true/false
@@ -211,9 +210,8 @@ const {
   reload: reloadFields,
   reloadAfterRemove: reloadFieldsAfterRemove,
 } = usePagedList({
-  fetcher: (query) => pageModelFieldApi.list(query),
+  fetcher: (query) => pageModelFieldApi.list(siteId.value, query),
   params: () => ({
-    siteId: siteId.value,
     modelId: currentModelId.value,
   }),
   immediate: false,
@@ -229,7 +227,7 @@ function handleReset() {
 
 async function handleToggleEnabled(model: PageModel) {
   try {
-    await pageModelApi.update(model.id, { ...model, enabled: !model.enabled })
+    await pageModelApi.update(siteId.value, model.id, { ...model, enabled: !model.enabled })
     showSuccess(!model.enabled ? '已启用' : '已禁用')
     reloadPageModels()
   } catch {
@@ -301,11 +299,11 @@ async function handleDelete(model: PageModel) {
   if (!confirmed) return
   try {
     if (directRemove) {
-      await pageModelApi.delete(model.id)
+      await pageModelApi.delete(siteId.value, model.id)
       showSuccess('删除成功')
       reloadAfterRemove()
     } else {
-      await pageModelApi.update(model.id, {
+      await pageModelApi.update(siteId.value, model.id, {
         ...model,
         status: DDL_FIELD_STATUS.PENDING_DELETE,
       })
@@ -328,9 +326,9 @@ async function handleSubmit() {
   }
   try {
     if (isEdit.value) {
-      await pageModelApi.update(formData.value.id, formData.value)
+      await pageModelApi.update(siteId.value, formData.value.id, formData.value)
     } else {
-      await pageModelApi.create(formData.value)
+      await pageModelApi.create(siteId.value, formData.value)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false
@@ -469,11 +467,11 @@ async function handleDeleteField(field: PageModelField) {
   if (!confirmed) return
   try {
     if (directRemove) {
-      await pageModelFieldApi.delete(field.id)
+      await pageModelFieldApi.delete(siteId.value, field.id)
       showSuccess('删除成功')
       reloadFieldsAfterRemove()
     } else {
-      await pageModelFieldApi.update(field.id, { ...field, status: DDL_FIELD_STATUS.PENDING_DELETE })
+      await pageModelFieldApi.update(siteId.value, field.id, { ...field, status: DDL_FIELD_STATUS.PENDING_DELETE })
       showSuccess('已标记为待删除')
       reloadFields()
     }
@@ -484,7 +482,7 @@ async function handleDeleteField(field: PageModelField) {
 
 async function handleToggleFieldVisible(field: PageModelField) {
   try {
-    await pageModelFieldApi.update(field.id, { ...field, visible: !field.visible })
+    await pageModelFieldApi.update(siteId.value, field.id, { ...field, visible: !field.visible })
     reloadFields()
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
@@ -493,7 +491,7 @@ async function handleToggleFieldVisible(field: PageModelField) {
 
 async function handleToggleFieldEnabled(field: PageModelField) {
   try {
-    await pageModelFieldApi.update(field.id, { ...field, enabled: !field.enabled })
+    await pageModelFieldApi.update(siteId.value, field.id, { ...field, enabled: !field.enabled })
     reloadFields()
   } catch {
     // useRequest 已统一处理错误提示，不重复弹窗
@@ -527,10 +525,10 @@ async function handleFieldDdl(field: PageModelField) {
     // 并发加载四种 DDL 预览：状态不匹配的 DDL 请求会被后端 400 拒绝，
     // 用 allSettled 隔离失败，避免单个请求失败导致整个弹窗无法加载
     const [addRes, modifyRes, removeRes, changeRes] = await Promise.allSettled([
-      pageModelFieldApi.generateAddDdl(field.id),
-      pageModelFieldApi.generateModifyDdl(field.id),
-      pageModelFieldApi.generateRemoveDdl(field.id),
-      pageModelFieldApi.generateChangeDdl(field.id),
+      pageModelFieldApi.generateAddDdl(siteId.value, field.id),
+      pageModelFieldApi.generateModifyDdl(siteId.value, field.id),
+      pageModelFieldApi.generateRemoveDdl(siteId.value, field.id),
+      pageModelFieldApi.generateChangeDdl(siteId.value, field.id),
     ])
     addDdlContent.value =
       addRes.status === 'fulfilled' ? (addRes.value.data.value || '') : ''
@@ -558,9 +556,9 @@ async function handleSubmitField() {
   }
   try {
     if (isEdit.value) {
-      await pageModelFieldApi.update(fieldFormData.value.id, fieldFormData.value)
+      await pageModelFieldApi.update(siteId.value, fieldFormData.value.id, fieldFormData.value)
     } else {
-      await pageModelFieldApi.create(fieldFormData.value)
+      await pageModelFieldApi.create(siteId.value, fieldFormData.value)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false
@@ -582,10 +580,10 @@ async function handleShowDdl(model: PageModel) {
     changeDdlContent.value = ''
     showDdlDialog.value = true
     const [createRes, dropRes, modifyRes, changeRes] = await Promise.allSettled([
-      pageModelApi.generateCreateTableDdl(model.id),
-      pageModelApi.generateDropTableDdl(model.id),
-      pageModelApi.generateFieldDdl(model.id),
-      pageModelApi.generateChangeDdl(model.id),
+      pageModelApi.generateCreateTableDdl(siteId.value, model.id),
+      pageModelApi.generateDropTableDdl(siteId.value, model.id),
+      pageModelApi.generateFieldDdl(siteId.value, model.id),
+      pageModelApi.generateChangeDdl(siteId.value, model.id),
     ])
     createDdlContent.value =
       createRes.status === 'fulfilled' ? (createRes.value.data.value || '') : ''
@@ -609,7 +607,7 @@ async function handleGenerateDdl() {
     ddlType.value = 'fields'
     ddlFieldId.value = ''
     ddlModelId.value = currentModelId.value
-    const { data } = await pageModelApi.generateFieldDdl(currentModelId.value)
+    const { data } = await pageModelApi.generateFieldDdl(siteId.value, currentModelId.value)
     ddlContent.value = data.value || ''
     showDdlDialog.value = true
   } catch {
@@ -625,17 +623,17 @@ async function handleExecuteDdl() {
     ddlLoading.value = true
     if (ddlType.value === 'table') {
       if (ddlTab.value === 'create') {
-        await pageModelApi.executeCreateTable(ddlModelId.value)
+        await pageModelApi.executeCreateTable(siteId.value, ddlModelId.value)
         showSuccess('建表DDL执行成功')
       } else if (ddlTab.value === 'drop') {
-        await pageModelApi.dropTable(ddlModelId.value)
+        await pageModelApi.dropTable(siteId.value, ddlModelId.value)
         showSuccess('删表DDL执行成功')
       } else if (ddlTab.value === 'change') {
-        const { data } = await pageModelApi.applyChangeDdl(ddlModelId.value)
+        const { data } = await pageModelApi.applyChangeDdl(siteId.value, ddlModelId.value)
         changeDdlContent.value = data.value || ''
         showSuccess('模型变更DDL执行成功')
       } else {
-        const { data } = await pageModelApi.applyFieldDdl(ddlModelId.value)
+        const { data } = await pageModelApi.applyFieldDdl(siteId.value, ddlModelId.value)
         modifyDdlContent.value = data.value || ''
         showSuccess('字段增量DDL执行成功')
       }
@@ -643,7 +641,7 @@ async function handleExecuteDdl() {
       if (ddlFieldId.value) {
         if (ddlTab.value === 'change') {
           // 字段变更 DDL（列重命名/类型/注释，对比快照与当前字段）
-          const { data } = await pageModelFieldApi.applyChangeDdl(ddlFieldId.value)
+          const { data } = await pageModelFieldApi.applyChangeDdl(siteId.value, ddlFieldId.value)
           changeDdlContent.value = data.value || ''
           showSuccess('字段变更DDL执行成功')
         } else {
@@ -656,12 +654,12 @@ async function handleExecuteDdl() {
             modify: pageModelFieldApi.executeModifyDdl,
             remove: pageModelFieldApi.executeRemoveDdl,
           } as const
-          await executeMap[operation](ddlFieldId.value)
+          await executeMap[operation](siteId.value, ddlFieldId.value)
           const labelMap = { add: '添加', modify: '修改', remove: '删除' } as const
           showSuccess(`字段${labelMap[operation]}DDL执行成功`)
         }
       } else {
-        const { data } = await pageModelApi.applyFieldDdl(ddlModelId.value)
+        const { data } = await pageModelApi.applyFieldDdl(siteId.value, ddlModelId.value)
         ddlContent.value = data.value || ''
         showSuccess('字段DDL执行成功')
       }
@@ -709,8 +707,8 @@ async function loadIndexFields(modelId: string) {
     //  - indexFieldList: 后端按 enabled + status IN(ADDED, MODIFIED) 筛选后的字段
     //    （即数据库中真实存在的列，索引可引用的合法范围），前端不再 filter
     const [allRes, filteredRes] = await Promise.all([
-      pageModelFieldApi.getAll(modelId),
-      pageModelFieldApi.getAll(modelId, {
+      pageModelFieldApi.getAll(siteId.value, modelId),
+      pageModelFieldApi.getAll(siteId.value, modelId, {
         enabled: true,
         status: [DDL_FIELD_STATUS.ADDED, DDL_FIELD_STATUS.MODIFIED],
       }),
@@ -760,11 +758,10 @@ async function reloadIndexes() {
   if (!m?.id) return
   try {
     indexLoading.value = true
-    const { data } = await pageModelFieldIndexApi.page({
+    const { data } = await pageModelFieldIndexApi.page(siteId.value, {
       pageNumber: indexPage.value,
       pageSize: indexPageSize.value,
       modelId: m.id,
-      siteId: siteId.value,
       indexName: indexQuery.value.indexName,
       ...(indexQuery.value.indexType === '__all__' ? {} : { indexType: indexQuery.value.indexType }),
     })
@@ -834,11 +831,11 @@ async function handleSaveIndex() {
   try {
     const payload = { ...indexForm.value, fieldIds: indexFieldIds.value }
     if (isIndexEdit.value && indexForm.value.id) {
-      await pageModelFieldIndexApi.update(indexForm.value.id, payload)
+      await pageModelFieldIndexApi.update(siteId.value, indexForm.value.id, payload)
       showSuccess('修改索引成功')
     } else {
       payload.status = DDL_FIELD_STATUS.PENDING_ADD
-      await pageModelFieldIndexApi.create(payload)
+      await pageModelFieldIndexApi.create(siteId.value, payload)
       showSuccess('新增索引成功')
     }
     showIndexFormDialog.value = false
@@ -851,7 +848,7 @@ async function handleDeleteIndex(index: PageModelFieldIndex) {
   const ok = await confirm('删除索引', `确认删除索引「${index.indexName}」吗？`)
   if (!ok) return
   try {
-    if (index.id) await pageModelFieldIndexApi.delete(index.id)
+    if (index.id) await pageModelFieldIndexApi.delete(siteId.value, index.id)
     showSuccess('删除成功')
     await reloadIndexes()
   } catch {
@@ -922,8 +919,8 @@ async function handleIndexDdl(index: PageModelFieldIndex) {
   try {
     indexDdlLoading.value = true
     const [cRes, dRes] = await Promise.allSettled([
-      pageModelFieldIndexApi.generateCreateDdl(index.id!),
-      pageModelFieldIndexApi.generateDropDdl(index.id!),
+      pageModelFieldIndexApi.generateCreateDdl(siteId.value, index.id!),
+      pageModelFieldIndexApi.generateDropDdl(siteId.value, index.id!),
     ])
     createIndexDdlContent.value =
       cRes.status === 'fulfilled' ? (cRes.value.data.value || '') : ''
@@ -938,10 +935,10 @@ async function handleExecuteIndexDdl() {
   try {
     indexDdlLoading.value = true
     if (indexDdlTab.value === 'create') {
-      await pageModelFieldIndexApi.executeCreateDdl(currentDdlIndex.value.id)
+      await pageModelFieldIndexApi.executeCreateDdl(siteId.value, currentDdlIndex.value.id)
       showSuccess('创建索引DDL执行成功')
     } else {
-      await pageModelFieldIndexApi.executeDropDdl(currentDdlIndex.value.id)
+      await pageModelFieldIndexApi.executeDropDdl(siteId.value, currentDdlIndex.value.id)
       showSuccess('删除索引DDL执行成功')
     }
     showIndexDdlDialog.value = false

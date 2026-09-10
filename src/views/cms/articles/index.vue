@@ -66,12 +66,11 @@ const {
   search: handleSearch,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => articleApi.list(query),
+  fetcher: (query) => articleApi.list(siteId.value, query),
   params: () => ({
     title: searchKeyword.value,
     categoryId: selectedCategoryId.value || '',
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-    siteId: siteId.value,
   }),
 })
 
@@ -109,7 +108,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除文章', '确定要删除该文章吗？')
   if (!confirmed) return
   try {
-    await articleApi.delete(id)
+    await articleApi.delete(siteId.value, id)
     showSuccess('删除成功')
     reloadAfterRemove()
   } catch {
@@ -124,8 +123,8 @@ async function handleAssignTag(article: Article) {
   selectedCategoryIds.value = []
   try {
     const [tagsRes, catsRes] = await Promise.all([
-      articleApi.listTags(article.id),
-      articleApi.listCategories(article.id),
+      articleApi.listTags(siteId.value, article.id),
+      articleApi.listCategories(siteId.value, article.id),
     ])
     if (tagsRes.data.value) {
       selectedTagNames.value = tagsRes.data.value.map((t) => t.title)
@@ -141,7 +140,7 @@ async function handleAssignTag(article: Article) {
 async function handleSaveTags() {
   if (!currentArticle.value) return
   try {
-    await articleApi.update(currentArticle.value.id, {
+    await articleApi.update(siteId.value, currentArticle.value.id, {
       categoryIds: selectedCategoryIds.value,
       tagNames: selectedTagNames.value,
     })

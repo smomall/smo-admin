@@ -135,12 +135,11 @@ const {
   reload: reloadNotes,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => noteApi.list(query),
+  fetcher: (query) => noteApi.list(siteId.value, query),
   params: () => ({
     title: searchTitle.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
     categoryId: selectedCategoryId.value || '',
-    siteId: siteId.value,
   }),
 })
 
@@ -184,7 +183,7 @@ watch(
 
 async function fetchChapters(noteId: string) {
   try {
-    const { data } = await chapterApi.tree(noteId)
+    const { data } = await chapterApi.tree(siteId.value, noteId)
     if (data.value) {
       chapters.value = data.value
       buildFlatChapters(data.value)
@@ -314,7 +313,7 @@ async function activateChapter(id: string, force = false) {
       contentType: 'markdown',
     }
     // 文档标题/摘要使用章节的，仅正文/内容类型从文档实体取
-    const { data } = await documentApi.getById(chapter.id)
+    const { data } = await documentApi.getById(siteId.value, chapter.id)
     if (data.value) {
       docForm.value.content = data.value.content || ''
       docForm.value.contentType = data.value.contentType || 'markdown'
@@ -340,9 +339,8 @@ async function handleSaveActiveDoc() {
   try {
     const chapter = activeChapter.value
     const content = docForm.value.content || ''
-    await documentApi.update(docForm.value.id, {
+    await documentApi.update(siteId.value, docForm.value.id, {
       id: docForm.value.id,
-      siteId: siteId.value,
       noteId: docForm.value.noteId,
       title: chapter?.title || '',
       description: chapter?.description || '',
@@ -421,13 +419,12 @@ async function handleSubmitChapterDialog() {
     status: editChapterForm.value.status,
     sort: editChapterForm.value.sort,
     level: calculatedLevel,
-    siteId: siteId.value,
   }
   try {
     if (isAddChapterDialog.value) {
-      await chapterApi.create(chapterData)
+      await chapterApi.create(siteId.value, chapterData)
     } else {
-      await chapterApi.update(editChapterForm.value.id, chapterData)
+      await chapterApi.update(siteId.value, editChapterForm.value.id, chapterData)
     }
     showSuccess(isAddChapterDialog.value ? '新增成功' : '更新成功')
     showChapterDialog.value = false
@@ -450,7 +447,7 @@ async function handleDeleteChapter(id: string) {
   const ok = await confirm('删除章节', '删除章节将同时删除其下子章节和对应文档，确定继续？')
   if (!ok) return
   try {
-    await chapterApi.delete(id)
+    await chapterApi.delete(siteId.value, id)
     showSuccess('删除成功')
     if (activeChapterId.value === id) {
       activeChapterId.value = ''
@@ -486,7 +483,7 @@ function handleAddNote() {
 
 async function fetchNoteRelations(id: string) {
   try {
-    const [tagsRes, catsRes] = await Promise.all([noteApi.listTags(id), noteApi.listCategories(id)])
+    const [tagsRes, catsRes] = await Promise.all([noteApi.listTags(siteId.value, id), noteApi.listCategories(siteId.value, id)])
     if (tagsRes.data.value) {
       selectedTagNames.value = tagsRes.data.value.map((t) => t.title)
     }
@@ -525,7 +522,7 @@ async function handleDeleteNote(id: string) {
   const ok = await confirm('删除笔记', '删除笔记将同时删除其下所有章节和文档，确定继续？')
   if (!ok) return
   try {
-    await noteApi.delete(id)
+    await noteApi.delete(siteId.value, id)
     showSuccess('删除成功')
     if (selectedNote.value?.id === id) {
       selectedNote.value = null
@@ -551,16 +548,15 @@ async function handleSubmitNote() {
     cover: noteForm.value.cover,
     status: noteForm.value.status,
     publishAt: noteForm.value.publishAt,
-    siteId: siteId.value,
     categoryIds: selectedCategoryIds.value,
     tagNames: selectedTagNames.value,
   }
   try {
     if (isNoteEdit.value) {
-      await noteApi.update(noteForm.value.id, noteData)
+      await noteApi.update(siteId.value, noteForm.value.id, noteData)
       showSuccess('更新成功')
     } else {
-      await noteApi.create(noteData)
+      await noteApi.create(siteId.value, noteData)
       showSuccess('新增成功')
     }
     showNoteDialog.value = false

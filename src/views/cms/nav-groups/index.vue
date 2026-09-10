@@ -72,7 +72,6 @@ const showEditItemDialog = ref(false)
 const isEdit = ref(false)
 const groupFormData = ref({
   id: '',
-  siteId: '',
   name: '',
   code: '',
   status: '1',
@@ -147,10 +146,9 @@ const {
   reload: reloadGroups,
   reloadAfterRemove: reloadGroupsAfterRemove,
 } = usePagedList({
-  fetcher: (query) => navGroupApi.list(query),
+  fetcher: (query) => navGroupApi.list(siteId.value, query),
   params: () => ({
     name: searchName.value,
-    siteId: siteId.value,
   }),
 })
 
@@ -164,10 +162,9 @@ const {
   reload: reloadItems,
   reloadAfterRemove: reloadItemsAfterRemove,
 } = usePagedList({
-  fetcher: (query) => navApi.list(query),
+  fetcher: (query) => navApi.list(siteId.value, query),
   params: () => ({
     groupId: currentGroupId.value,
-    siteId: siteId.value,
   }),
   immediate: false,
 })
@@ -189,9 +186,8 @@ function handleSelectGroup(group: NavGroup) {
 async function fetchNavTree() {
   treeLoading.value = true
   try {
-    const { data } = await navApi.tree({
+    const { data } = await navApi.tree(siteId.value, {
       title: poolSearchTitle.value,
-      siteId: siteId.value,
     })
     navTreeItems.value = data.value || []
     // 默认展开所有含子节点的节点
@@ -225,7 +221,6 @@ function handleAddGroup() {
   isEdit.value = false
   groupFormData.value = {
     id: '',
-    siteId: siteId.value,
     name: '',
     code: '',
     status: '1',
@@ -237,7 +232,6 @@ function handleEditGroup(group: NavGroup) {
   isEdit.value = true
   groupFormData.value = {
     id: group.id,
-    siteId: group.siteId || siteId.value,
     name: group.name || '',
     code: group.code || '',
     status: String(group.status),
@@ -252,12 +246,12 @@ async function handleSaveGroup() {
   }
   try {
     if (isEdit.value) {
-      await navGroupApi.update(groupFormData.value.id, groupFormData.value)
+      await navGroupApi.update(siteId.value, groupFormData.value.id, groupFormData.value)
       showSuccess('更新成功')
       showGroupDialog.value = false
       reloadGroups()
     } else {
-      await navGroupApi.create(groupFormData.value)
+      await navGroupApi.create(siteId.value, groupFormData.value)
       showSuccess('新增成功')
       showGroupDialog.value = false
       groupSearch()
@@ -274,7 +268,7 @@ async function handleDeleteGroup(id: string) {
   )
   if (!confirmed) return
   try {
-    await navGroupApi.delete(id)
+    await navGroupApi.delete(siteId.value, id)
     showSuccess('删除成功')
     if (currentGroupId.value === id) {
       currentGroupId.value = ''
@@ -335,7 +329,7 @@ async function handleAddItems() {
   try {
     // 将选中导航项的 groupId 设为当前分组，建立直接关联
     for (const item of validItems) {
-      await navApi.update(item.id, { groupId: currentGroupId.value })
+      await navApi.update(siteId.value, item.id, { groupId: currentGroupId.value })
     }
     showSuccess(`已添加 ${validItems.length} 个导航项`)
     showItemDialog.value = false
@@ -359,7 +353,7 @@ function handleEditItem(item: NavItem) {
 
 async function handleSaveEditItem() {
   try {
-    await navApi.update(editItemFormData.value.id, {
+    await navApi.update(siteId.value, editItemFormData.value.id, {
       title: editItemFormData.value.title,
       sort: editItemFormData.value.sort,
     })
@@ -379,7 +373,7 @@ async function handleRemoveItem(item: NavItem) {
   if (!confirmed) return
   try {
     // 清空 groupId，解除与当前分组的关联（导航项本身不删除）
-    await navApi.update(item.id, { groupId: '' })
+    await navApi.update(siteId.value, item.id, { groupId: '' })
     showSuccess('移除成功')
     reloadItemsAfterRemove()
   } catch {
@@ -419,7 +413,7 @@ async function handleDragEnd() {
     for (let i = 0; i < groupItems.value.length; i++) {
       const item = groupItems.value[i]
       if (item?.id) {
-        await navApi.update(item.id, { sort: pageOffset + i })
+        await navApi.update(siteId.value, item.id, { sort: pageOffset + i })
       }
     }
     showSuccess('排序已保存')

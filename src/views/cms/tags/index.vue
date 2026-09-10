@@ -61,12 +61,11 @@ const {
   reload,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => tagApi.list(query),
+  fetcher: (query) => tagApi.list(siteId.value, query),
   params: () => ({
     title: searchKeyword.value,
     slug: searchSlug.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-    siteId: siteId.value,
   }),
 })
 
@@ -130,7 +129,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除标签', '确定要删除该标签吗？')
   if (!confirmed) return
   try {
-    await tagApi.delete(id)
+    await tagApi.delete(siteId.value, id)
     showSuccess('删除成功')
     reloadAfterRemove()
   } catch {
@@ -145,18 +144,17 @@ async function handleSubmit() {
   }
   const submitData = {
     ...formData.value,
-    siteId: siteId.value,
     cover: undefined as string | undefined,
   }
   try {
     if (isEdit.value) {
-      await tagApi.update(formData.value.id, submitData)
+      await tagApi.update(siteId.value, formData.value.id, submitData)
       showSuccess('更新成功')
       showDialog.value = false
       // 编辑不影响列表顺序，留在当前页刷新
       reload()
     } else {
-      await tagApi.create(submitData)
+      await tagApi.create(siteId.value, submitData)
       showSuccess('新增成功')
       showDialog.value = false
       handleSearch()

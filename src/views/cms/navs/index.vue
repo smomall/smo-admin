@@ -111,11 +111,10 @@ const {
   reload: reloadNavs,
   reloadAfterRemove,
 } = usePagedList({
-  fetcher: (query) => navApi.list(query),
+  fetcher: (query) => navApi.list(siteId.value, query),
   params: () => ({
     title: searchTitle.value,
     status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-    siteId: siteId.value,
   }),
   immediate: false,
 })
@@ -123,10 +122,9 @@ const {
 async function fetchTreeNavItems(opts?: { expandAll?: boolean }) {
   loading.value = true
   try {
-    const { data } = await navApi.tree({
+    const { data } = await navApi.tree(siteId.value, {
       title: searchTitle.value,
       status: searchStatus.value === '__all__' ? '' : searchStatus.value,
-      siteId: siteId.value,
     })
     if (data.value) {
       treeNavItems.value = data.value || []
@@ -148,7 +146,7 @@ async function fetchTreeNavItems(opts?: { expandAll?: boolean }) {
 // 获取导航项树（用于父级选择，需保留层级结构）
 async function fetchAllNavItems() {
   try {
-    const { data } = await navApi.tree({ siteId: siteId.value })
+    const { data } = await navApi.tree(siteId.value)
     if (data.value) {
       allNavItems.value = data.value || []
     }
@@ -286,7 +284,7 @@ async function handleDelete(id: string) {
   const confirmed = await confirm('删除导航项', '确定要删除该导航项吗？其所有子导航项将一并删除。')
   if (!confirmed) return
   try {
-    await navApi.delete(id)
+    await navApi.delete(siteId.value, id)
     showSuccess('删除成功')
     if (viewMode.value === 'list') {
       reloadAfterRemove()
@@ -321,13 +319,10 @@ async function handleSubmit() {
     if (formData.value.linkId) {
       submitData.linkId = formData.value.linkId
     }
-    if (!isEdit.value) {
-      submitData.siteId = siteId.value
-    }
     if (isEdit.value) {
-      await navApi.update(formData.value.id, submitData)
+      await navApi.update(siteId.value, formData.value.id, submitData)
     } else {
-      await navApi.create(submitData)
+      await navApi.create(siteId.value, submitData)
     }
     showSuccess(isEdit.value ? '更新成功' : '新增成功')
     showDialog.value = false

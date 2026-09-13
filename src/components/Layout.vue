@@ -20,9 +20,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import SiteSelector from './SiteSelector.vue'
 import SidebarMenuNestedItem from './SidebarMenuNestedItem.vue'
 import NotificationBell from './NotificationBell.vue'
+import FloatingSiteSelector from './FloatingSiteSelector.vue'
 import { useTheme } from '@/composables/useTheme'
 import { APP_TITLE } from '@/constants/app'
 import {
@@ -81,7 +81,6 @@ const userStore = useUserStore()
 const expandedMenus = ref<Set<string>>(new Set())
 const refreshKey = ref(0)
 const isRefreshing = ref(false)
-const siteSelectorOpen = ref(false)
 
 const { isDark, toggleTheme } = useTheme()
 
@@ -277,15 +276,6 @@ onMounted(async () => {
 
         <button
           class="p-2 rounded-md hover:bg-secondary hover:text-primary transition-all duration-200"
-          @click="siteSelectorOpen = true"
-          title="选择站点"
-        >
-          <Globe class="w-4 h-4" />
-        </button>
-        <SiteSelector v-model:open="siteSelectorOpen" />
-
-        <button
-          class="p-2 rounded-md hover:bg-secondary hover:text-primary transition-all duration-200"
           :class="{ 'animate-spin text-primary': isRefreshing }"
           @click="handleRefresh"
         >
@@ -423,6 +413,8 @@ onMounted(async () => {
           </transition>
         </router-view>
       </div>
+
+      <FloatingSiteSelector />
     </SidebarInset>
   </SidebarProvider>
 </template>

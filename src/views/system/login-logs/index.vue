@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,8 +26,6 @@ import {
   Clock,
   User,
   MapPin,
-  AlertCircle,
-  CheckCircle2,
   Monitor,
   Smartphone,
   Tablet,
@@ -38,6 +37,7 @@ import { logApi } from '@/api'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { useDict } from '@/composables/useDict'
+import StatusBadge from '@/components/StatusBadge.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
 import TablePagination from '@/components/TablePagination.vue'
@@ -46,8 +46,8 @@ import { usePagedList } from '@/composables/usePagedList'
 const { confirm } = useConfirmDialog()
 const { showSuccess } = useMessageDialog()
 
-const { getLabel: getStatusLabel } = useDict('login_status')
-const { getLabel: getDeviceTypeLabel } = useDict('login_device')
+const { getLabel: getStatusLabel } = useDict(DICT.LOGIN_STATUS)
+const { getLabel: getDeviceTypeLabel } = useDict(DICT.LOGIN_DEVICE)
 
 const searchUsername = ref('')
 const searchStatus = ref('__all__')
@@ -116,10 +116,6 @@ async function handleDelete(log: LoginLog) {
     showSuccess('删除成功')
     reloadAfterRemove()
   }
-}
-
-function getStatusIcon(status: string | undefined) {
-  return status === '1' ? CheckCircle2 : AlertCircle
 }
 
 function getDeviceTypeIcon(type: number | undefined) {
@@ -239,13 +235,7 @@ function getDeviceTypeIcon(type: number | undefined) {
               </span>
             </TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                <component :is="getStatusIcon(log.status)" class="w-3 h-3" />
-                {{ getStatusLabel(log.status) }}
-              </span>
+              <StatusBadge :type="DICT.LOGIN_STATUS" :value="log.status" />
             </TableCell>
             <TableCell class="max-w-xs truncate">{{ log.failReason || '-' }}</TableCell>
             <TableCell>

@@ -66,6 +66,9 @@ export const DICT = {
 
   // ========== 配置 ==========
   CONFIG_TYPE: 'config_type',
+
+  // ========== OSS ==========
+  OSS_UPLOAD_STATUS: 'oss_upload_status',
 } as const
 
 export type DictTypeCode = (typeof DICT)[keyof typeof DICT]

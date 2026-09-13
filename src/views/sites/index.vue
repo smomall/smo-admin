@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -29,13 +30,13 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TablePagination from '@/components/TablePagination.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const {
   items: siteStatusItems,
   fetchDict: fetchSiteStatus,
-  getLabel: getStatusLabel,
-} = useDict('common_status')
+} = useDict(DICT.COMMON_STATUS)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -234,12 +235,7 @@ async function handleSubmit() {
               {{ site.description || '-' }}
             </TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getStatusLabel(site.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="site.status" />
             </TableCell>
             <TableCell class="text-sm text-muted-foreground">{{ site.remark || '-' }}</TableCell>
             <TableCell>

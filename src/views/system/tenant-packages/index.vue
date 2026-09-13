@@ -36,6 +36,9 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { usePagedList } from '@/composables/usePagedList'
 import TablePagination from '@/components/TablePagination.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
+import { useDict } from '@/composables/useDict'
+import { DICT } from '@/constants/dict'
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -45,21 +48,7 @@ const searchStatus = ref<string>('__all__')
 const showDialog = ref(false)
 const isEdit = ref(false)
 
-const statusOptions = [
-  { label: '正常', value: '1' },
-  { label: '停用', value: '0' },
-]
-
-function getStatusLabel(status: number | string | undefined): string {
-  const item = statusOptions.find((o) => o.value === String(status))
-  return item ? item.label : '-'
-}
-
-function getStatusBadgeClass(status: number | string | undefined): string {
-  return String(status) === '1'
-    ? 'bg-green-100 text-green-800'
-    : 'bg-gray-100 text-gray-800'
-}
+const { items: statusOptions } = useDict(DICT.COMMON_STATUS)
 
 const formData = ref({
   id: '',
@@ -249,12 +238,7 @@ async function handleSubmit() {
             <TableCell>{{ pkg.accountLimit ?? '-' }}</TableCell>
             <TableCell>{{ pkg.expireDays != null ? `${pkg.expireDays}天` : '-' }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                :class="getStatusBadgeClass(pkg.status)"
-              >
-                {{ getStatusLabel(pkg.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="pkg.status" />
             </TableCell>
             <TableCell class="text-sm text-muted-foreground">
               {{ pkg.createdAt ? formatDateTime(pkg.createdAt) : '-' }}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -31,6 +32,7 @@ import { useTabStore } from '@/stores/tab'
 import CoverInput from '@/components/CoverInput.vue'
 import DictSelect from '@/components/DictSelect.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
+import DateTimePicker from '@/components/DateTimePicker.vue'
 
 const props = defineProps<{
   open: boolean
@@ -44,7 +46,7 @@ const emit = defineEmits<{
   (e: 'saved', pageId: string, isNew: boolean): void
 }>()
 
-const { dict: pageStatusDict, fetchDict: fetchPageStatus } = useDict(() => 'publish_status')
+const { dict: pageStatusDict, fetchDict: fetchPageStatus } = useDict(() => DICT.PUBLISH_STATUS)
 
 const pageStatusItems = computed(() => pageStatusDict.value?.items || [])
 

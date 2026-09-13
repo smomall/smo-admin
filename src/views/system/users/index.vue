@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Edit, Trash2, Shield, Key } from '@lucide/vue'
+import { Plus, Edit, Trash2, Shield, Key, User } from '@lucide/vue'
 import type { User as UserType, Role, Organization, Post, UserProfile, UserAddress } from '@/types'
 import { userApi, roleApi, organizationApi, postApi } from '@/api'
 import { useDict } from '@/composables/useDict'
@@ -19,15 +19,34 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { DICT } from '@/constants/dict'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import OrganizationTree from '@/components/OrganizationTree.vue'
 import OrganizationSelectItem from '@/components/OrganizationSelectItem.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox, CheckboxGroupRoot } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 
-const { items: userStatusItems, getLabel: getStatusLabel } = useDict(DICT.USER_STATUS)
+const { items: userStatusItems } = useDict(DICT.USER_STATUS)
 const { items: genderItems } = useDict(DICT.USER_GENDER)
 const { items: localeItems } = useDict(DICT.COMMON_LOCALE)
-const { getLabel: getRoleStatusLabel } = useDict(DICT.COMMON_STATUS)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -473,12 +492,7 @@ async function handleSavePassword() {
                   <TableCell>{{ user.organization?.name || '-' }}</TableCell>
                   <TableCell>{{ user.post?.name || '-' }}</TableCell>
                   <TableCell class="w-20">
-                    <span
-                      class="px-2 py-1 rounded-full text-xs font-medium"
-                      :class="'bg-secondary text-secondary-foreground'"
-                    >
-                      {{ getStatusLabel(user.status) }}
-                    </span>
+                    <StatusBadge :type="DICT.USER_STATUS" :value="user.status" />
                   </TableCell>
                   <TableCell class="w-28 sticky right-0 bg-card">
                     <div class="flex items-center justify-end gap-1">
@@ -869,12 +883,7 @@ async function handleSavePassword() {
                   <TableCell class="font-medium">{{ role.name }}</TableCell>
                   <TableCell class="w-32 text-sm text-muted-foreground">{{ role.code }}</TableCell>
                   <TableCell class="w-16">
-                    <span
-                      class="px-2 py-0.5 rounded text-xs"
-                      :class="'bg-secondary text-secondary-foreground'"
-                    >
-                      {{ getRoleStatusLabel(role.status) }}
-                    </span>
+                    <StatusBadge :type="DICT.COMMON_STATUS" :value="role.status" />
                   </TableCell>
                   <TableCell class="w-16">
                     <span

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -28,6 +29,7 @@ import type { TaskLog } from '@/api'
 import { taskLogApi, jobApi } from '@/api'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { useDict } from '@/composables/useDict'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
@@ -35,7 +37,7 @@ import { usePagedList } from '@/composables/usePagedList'
 const {
   fetchDict: fetchJobStatus,
   getLabel: getStatusLabel,
-} = useDict('job_status')
+} = useDict(DICT.JOB_STATUS)
 
 const route = useRoute()
 const router = useRouter()
@@ -191,13 +193,7 @@ function handleViewDetail(log: TaskLog) {
             <TableCell class="font-mono text-sm">{{ log.id }}</TableCell>
             <TableCell class="font-mono text-sm">{{ log.jobId }}</TableCell>
             <TableCell>
-              <span
-                class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                <component :is="getStatusIcon(log.status)" class="w-3 h-3" />
-                {{ getStatusLabel(log.status) }}
-              </span>
+              <StatusBadge :type="DICT.JOB_STATUS" :value="log.status" />
             </TableCell>
             <TableCell
               class="max-w-xs truncate cursor-pointer hover:text-primary"

@@ -96,6 +96,8 @@ async function loadCursorList(reset = true) {
       lastPublishAt: cursorLastPublishAt.value || undefined,
       pageSize: 20,
     }
+    const siteId = props.siteId
+    if (!siteId) return
     let result:
       | {
           records: CursorItem[]
@@ -107,17 +109,17 @@ async function loadCursorList(reset = true) {
       | undefined
     switch (props.linkType) {
       case LINK_TYPE.TAG: {
-        const { data } = await tagApi.cursor(params)
+        const { data } = await tagApi.cursor(siteId, params)
         result = data.value
         break
       }
       case LINK_TYPE.NOTE: {
-        const { data } = await noteApi.cursor(params)
+        const { data } = await noteApi.cursor(siteId, params)
         result = data.value
         break
       }
       case LINK_TYPE.ARTICLE: {
-        const { data } = await articleApi.cursor(params)
+        const { data } = await articleApi.cursor(siteId, params)
         result = data.value
         break
       }
@@ -186,9 +188,11 @@ const selectedLabel = computed(() => {
 
 // ─── 树形数据加载 ───
 async function loadCategories() {
+  const siteId = props.siteId
+  if (!siteId) return
   loading.value = true
   try {
-    const { data } = await categoryApi.tree(props.siteId)
+    const { data } = await categoryApi.tree(siteId)
     categories.value = data.value || []
   } catch {
     categories.value = []
@@ -198,9 +202,11 @@ async function loadCategories() {
 }
 
 async function loadPages() {
+  const siteId = props.siteId
+  if (!siteId) return
   loading.value = true
   try {
-    const { data } = await pageApi.tree(props.siteId)
+    const { data } = await pageApi.tree(siteId)
     pages.value = data.value || []
   } catch {
     pages.value = []

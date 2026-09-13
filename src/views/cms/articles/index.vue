@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -31,10 +32,11 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import CategoryTree from '@/components/CategoryTree.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: articleStatusItems, getLabel: getStatusLabel } = useDict('publish_status')
+const { items: articleStatusItems } = useDict(DICT.PUBLISH_STATUS)
 import { useTabStore } from '@/stores/tab'
 import { useSiteStore } from '@/stores/site'
 
@@ -231,12 +233,7 @@ async function handleSaveTags() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium"
-                    :class="'bg-secondary text-secondary-foreground'"
-                  >
-                    {{ getStatusLabel(article.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.PUBLISH_STATUS" :value="article.status" />
                 </TableCell>
                 <TableCell>{{ article.viewCount ?? 0 }}</TableCell>
                 <TableCell>{{ article.likeCount ?? 0 }}</TableCell>

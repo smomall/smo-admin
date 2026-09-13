@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +22,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Clock, User, MapPin, AlertCircle, CheckCircle2, FileText, Trash2 } from '@lucide/vue'
+import { Clock, User, MapPin, FileText, Trash2 } from '@lucide/vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import type { OperationLog } from '@/types'
 import { logApi } from '@/api'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
@@ -35,9 +37,9 @@ import { usePagedList } from '@/composables/usePagedList'
 const { confirm } = useConfirmDialog()
 const { showSuccess } = useMessageDialog()
 
-const { getLabel: getStatusLabel } = useDict('common_status')
-const { getLabel: getOperationTypeLabel } = useDict('operation_type')
-const { getLabel: getDeviceTypeLabel } = useDict('login_device')
+const { getLabel: getStatusLabel } = useDict(DICT.COMMON_STATUS)
+const { getLabel: getOperationTypeLabel } = useDict(DICT.OPERATION_TYPE)
+const { getLabel: getDeviceTypeLabel } = useDict(DICT.LOGIN_DEVICE)
 
 const searchUsername = ref('')
 const searchStatus = ref('__all__')
@@ -95,10 +97,6 @@ async function handleDelete(log: OperationLog) {
     showSuccess('删除成功')
     reloadAfterRemove()
   }
-}
-
-function getStatusIcon(status: string | undefined) {
-  return status === '1' ? CheckCircle2 : AlertCircle
 }
 
 function formatDuration(duration: number | undefined): string {
@@ -219,9 +217,7 @@ async function handleViewDetail(log: OperationLog) {
             <TableCell class="max-w-xs truncate">{{ log.functionName || '-' }}</TableCell>
             <TableCell>{{ getOperationTypeLabel(log.operateType) }}</TableCell>
             <TableCell>
-              <span class="px-2 py-0.5 rounded text-xs bg-muted font-mono">{{
-                log.requestMethod || '-'
-              }}</span>
+              <StatusBadge :type="DICT.HTTP_METHOD" :value="log.requestMethod" />
             </TableCell>
             <TableCell class="max-w-xs truncate font-mono text-sm">{{
               log.requestUrl || '-'
@@ -237,13 +233,7 @@ async function handleViewDetail(log: OperationLog) {
             <TableCell>{{ log.osInfo || '-' }}</TableCell>
             <TableCell>{{ getDeviceTypeLabel(log.deviceType) }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                <component :is="getStatusIcon(log.status)" class="w-3 h-3" />
-                {{ getStatusLabel(log.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="log.status" />
             </TableCell>
             <TableCell class="text-sm font-mono">{{ formatDuration(log.durationMs) }}</TableCell>
             <TableCell>

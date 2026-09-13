@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -33,20 +34,14 @@ import { postApi, organizationApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import OrganizationTree from '@/components/OrganizationTree.vue'
 import OrganizationSelectItem from '@/components/OrganizationSelectItem.vue'
 
-const { dict: enableStatusDict, fetchDict: fetchEnableStatus } = useDict(() => 'common_status')
+const { dict: enableStatusDict, fetchDict: fetchEnableStatus } = useDict(() => DICT.COMMON_STATUS)
 
 const enableStatusItems = computed(() => enableStatusDict.value?.items || [])
-
-function getLabel(value: string | number | undefined): string {
-  if (value === undefined || value === null) return '-'
-  const strValue = String(value)
-  const item = enableStatusItems.value.find((i) => i.value === strValue)
-  return item?.label || strValue
-}
 
 const loading = ref(false)
 const posts = ref<Post[]>([])
@@ -276,12 +271,7 @@ async function handleSubmit() {
                 <TableCell>{{ post.organization?.name || '-' }}</TableCell>
                 <TableCell>{{ post.sort || 0 }}</TableCell>
                 <TableCell>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium"
-                    :class="'bg-secondary text-secondary-foreground'"
-                  >
-                    {{ getLabel(post.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.COMMON_STATUS" :value="post.status" />
                 </TableCell>
                 <TableCell>{{ post.remark || '-' }}</TableCell>
                 <TableCell>

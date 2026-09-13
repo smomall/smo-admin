@@ -219,12 +219,20 @@ export interface DictItem {
   value: string
   sort: number
   status: string
+  /** Tailwind 样式类，用于状态徽章配色 */
+  className?: string
+  /** 图标名称 */
+  iconName?: string
   remark?: string
 }
 
 export interface DictItemOption {
   label: string
   value: string
+  /** Tailwind 样式类，用于状态徽章配色（由后端字典项 className 下发） */
+  className?: string
+  /** 图标名称 */
+  iconName?: string
 }
 
 export interface DictSelectResult {
@@ -687,6 +695,26 @@ export interface OssFile {
   fileSubType?: string
   contentType?: string
   status?: string
+  remark?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface OssMultipartFile {
+  id: string
+  configId?: string
+  bucketId?: string
+  uploadId?: string
+  fileId?: string
+  fileName?: string
+  fileHash?: string
+  fileSize?: number
+  fileKey?: string
+  contentType?: string
+  /** 是否分片 */
+  isPart?: boolean
+  status?: string
+  expireAt?: string
   remark?: string
   createdAt?: string
   updatedAt?: string

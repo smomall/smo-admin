@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -40,6 +41,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useDict } from '@/composables/useDict'
 import { useSiteStore } from '@/stores/site'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import OssUploader from '@/components/OssUploader.vue'
 import type { OssFile } from '@/types'
 import TablePagination from '@/components/TablePagination.vue'
@@ -50,9 +52,8 @@ const siteStore = useSiteStore()
 const {
   items: commentStatusItems,
   fetchDict: fetchCommentStatus,
-  getLabel: getStatusLabel,
-} = useDict('comment_status')
-const { items: commentBizTypeItems, fetchDict: fetchCommentBizType } = useDict('comment_biz_type')
+} = useDict(DICT.COMMENT_STATUS)
+const { items: commentBizTypeItems, fetchDict: fetchCommentBizType } = useDict(DICT.COMMENT_BIZ_TYPE)
 
 const route = useRoute()
 const { showError, showSuccess } = useMessageDialog()
@@ -373,12 +374,7 @@ async function handleSubmit() {
                 <span v-else class="text-muted-foreground">-</span>
               </TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="'bg-secondary text-secondary-foreground'"
-                >
-                  {{ getStatusLabel(comment.status) }}
-                </span>
+                <StatusBadge :type="DICT.COMMENT_STATUS" :value="comment.status" />
               </TableCell>
               <TableCell>{{ comment.likeCount }}</TableCell>
               <TableCell>
@@ -469,12 +465,7 @@ async function handleSubmit() {
                           }}</span>
                         </div>
                         <div class="flex items-center gap-2 mt-2">
-                          <span
-                            class="px-2 py-0.5 rounded text-xs"
-                            :class="'bg-secondary text-secondary-foreground'"
-                          >
-                            {{ getStatusLabel(sub.status) }}
-                          </span>
+                          <StatusBadge :type="DICT.COMMENT_STATUS" :value="sub.status" />
                           <Button
                             variant="ghost"
                             size="icon"

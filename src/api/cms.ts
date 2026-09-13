@@ -13,6 +13,7 @@ import type {
   OssFile,
   OssBucket,
   OssClientConfig,
+  OssMultipartFile,
   Page,
   PageModel,
   PageModelField,
@@ -342,18 +343,77 @@ export const ossClientConfigApi = {
     configKey?: string
     region?: string
     status?: string
-  }>('/oss/client-configs'),
+  }>('/oss/configs'),
 }
 
 // ================================================
-// OSS存储桶管理 API
+// OSS存储桶管理 API（桶挂在存储配置下）
 // ================================================
 export const ossBucketApi = {
-  ...createCrudApi<OssBucket, {
-    configId?: string
+  /** 分页查询指定配置下的存储桶 */
+  list: (configId: string, params?: {
     bucketName?: string
     status?: string
-  }>('/oss/buckets'),
+    pageNumber?: number
+    pageSize?: number
+  }) => {
+    return useRequest<PageResult<OssBucket>>(
+      `/oss/configs/${configId}/buckets/page${buildQuery(params)}`,
+    ).json()
+  },
+  /** 全量查询指定配置下的存储桶 */
+  getAll: (configId: string) => {
+    return useRequest<OssBucket[]>(`/oss/configs/${configId}/buckets`).json()
+  },
+  /** 查询指定配置下的存储桶详情 */
+  getById: (configId: string, id: string) => {
+    return useRequest<OssBucket>(`/oss/configs/${configId}/buckets/${id}`).json()
+  },
+  /** 在指定配置下新增存储桶 */
+  create: (configId: string, data: Partial<OssBucket>) => {
+    return useRequest(`/oss/configs/${configId}/buckets`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }).json()
+  },
+  /** 更新指定配置下的存储桶 */
+  update: (configId: string, id: string, data: Partial<OssBucket>) => {
+    return useRequest(`/oss/configs/${configId}/buckets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }).json()
+  },
+  /** 删除指定配置下的存储桶 */
+  delete: (configId: string, id: string) => {
+    return useRequest(`/oss/configs/${configId}/buckets/${id}`, {
+      method: 'DELETE',
+    }).json()
+  },
+}
+
+// ================================================
+// OSS上传文件记录 API（仅查看与删除）
+// ================================================
+export const ossMultipartFileApi = {
+  /** 分页查询上传文件记录 */
+  list: (params?: {
+    fileName?: string
+    status?: string
+    pageNumber?: number
+    pageSize?: number
+  }) => {
+    return useRequest<PageResult<OssMultipartFile>>(
+      `/oss/multipart-files/page${buildQuery(params)}`,
+    ).json()
+  },
+  /** 查询上传文件记录详情 */
+  getById: (id: string) => {
+    return useRequest<OssMultipartFile>(`/oss/multipart-files/${id}`).json()
+  },
+  /** 删除上传文件记录 */
+  delete: (id: string) => {
+    return useRequest(`/oss/multipart-files/${id}`, { method: 'DELETE' }).json()
+  },
 }
 
 // ================================================

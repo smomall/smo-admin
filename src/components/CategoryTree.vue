@@ -21,7 +21,9 @@ const categories = ref<Category[]>([])
 const expandedIds = ref<Set<string>>(new Set())
 
 async function fetchCategories() {
-  const { data } = await categoryApi.tree(props.siteId)
+  const siteId = props.siteId
+  if (!siteId) return
+  const { data } = await categoryApi.tree(siteId)
   if (data.value) {
     categories.value = data.value
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -26,14 +27,14 @@ import { configApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const {
   fetchDict: fetchEnableStatus,
   items: enableStatusItems,
-  getLabel,
-} = useDict(() => 'common_status')
-const { getLabel: getConfigTypeLabel } = useDict(() => 'config_type')
+} = useDict(() => DICT.COMMON_STATUS)
+const { getLabel: getConfigTypeLabel } = useDict(() => DICT.CONFIG_TYPE)
 
 const loading = ref(false)
 const isListView = ref(true)
@@ -353,12 +354,7 @@ async function handleSubmitItem() {
               <TableCell>{{ config.name }}</TableCell>
               <TableCell>{{ config.code }}</TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="'bg-secondary text-secondary-foreground'"
-                >
-                  {{ getLabel(config.status) }}
-                </span>
+                <StatusBadge :type="DICT.COMMON_STATUS" :value="config.status" />
               </TableCell>
               <TableCell>{{ config.remark || '-' }}</TableCell>
               <TableCell>
@@ -454,12 +450,7 @@ async function handleSubmitItem() {
               <TableCell>{{ getConfigTypeLabel(item.type) || '-' }}</TableCell>
               <TableCell>{{ item.sort || 0 }}</TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="'bg-secondary text-secondary-foreground'"
-                >
-                  {{ getLabel(item.status) }}
-                </span>
+                <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
               </TableCell>
               <TableCell>{{ item.remark || '-' }}</TableCell>
               <TableCell>

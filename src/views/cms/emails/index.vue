@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref } from 'vue'
 import { formatDateTime } from '@/lib/utils'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -30,10 +31,11 @@ import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
+const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -258,12 +260,7 @@ async function handleSendSubmit() {
             <TableCell>{{ email.username }}</TableCell>
             <TableCell>{{ email.defaultEncoding || '-' }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getStatusLabel(email.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="email.status" />
             </TableCell>
             <TableCell class="text-sm text-muted-foreground">
               {{ email.createdAt ? formatDateTime(email.createdAt) : '-' }}

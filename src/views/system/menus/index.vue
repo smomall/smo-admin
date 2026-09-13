@@ -43,6 +43,8 @@ import { menuApi } from '@/api'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { Menu as MenuType } from '@/types'
+import { DICT } from '@/constants/dict'
+import StatusBadge from '@/components/StatusBadge.vue'
 
 const menus = ref<MenuType[]>([])
 const allMenus = ref<MenuType[]>([])
@@ -350,7 +352,7 @@ async function handleSort(menus: MenuType[]) {
             列表
           </Button>
         </div>
-        <Button @click="handleAdd">
+        <Button @click="handleAdd()">
           <Plus class="w-4 h-4 mr-2" />
           新增菜单
         </Button>
@@ -438,14 +440,7 @@ async function handleSort(menus: MenuType[]) {
             <span class="w-28 hidden lg:block text-xs text-muted-foreground truncate">{{ getParentName(menu.parentId || '') }}</span>
             <span class="w-40 hidden md:block text-xs text-muted-foreground truncate font-mono">{{ menu.path }}</span>
             <span class="w-20 hidden lg:block">
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
-                :class="{
-                  'bg-blue-50 text-blue-600': String(menu.type) === 'd',
-                  'bg-green-50 text-green-600': String(menu.type) === 'm',
-                  'bg-amber-50 text-amber-600': String(menu.type) === 'b',
-                }">
-                {{ String(menu.type) === 'd' ? '目录' : String(menu.type) === 'm' ? '菜单' : '按钮' }}
-              </span>
+              <StatusBadge :type="DICT.MENU_TYPE" :value="menu.type" />
             </span>
             <span class="w-40 hidden lg:block text-xs text-muted-foreground truncate font-mono">{{ menu.permission || '-' }}</span>
             <span class="w-32 hidden xl:block text-xs text-muted-foreground truncate font-mono">{{ menu.component || '-' }}</span>

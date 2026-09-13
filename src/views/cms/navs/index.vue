@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
@@ -41,6 +42,7 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
 import NavTreeNode from '@/components/NavTreeNode.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import LinkTargetSelect from '@/components/LinkTargetSelect.vue'
@@ -51,8 +53,8 @@ const {
   items: statusItems,
   fetchDict: fetchStatusDict,
   getLabel: getStatusLabel,
-} = useDict('common_status')
-const { fetchDict: fetchNavTarget, getLabel: getTargetText } = useDict('open_target')
+} = useDict(DICT.COMMON_STATUS)
+const { fetchDict: fetchNavTarget, getLabel: getTargetText } = useDict(DICT.OPEN_TARGET)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -502,12 +504,7 @@ onMounted(() => {
               </span>
             </span>
             <span class="w-16 text-center hidden lg:block">
-              <span
-                class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getStatusLabel(item.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
             </span>
             <span class="w-32 hidden xl:block text-xs text-muted-foreground truncate">{{
               item.remark || '-'

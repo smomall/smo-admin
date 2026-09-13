@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -36,17 +37,17 @@ const {
   items: noticeStatusItems,
   fetchDict: fetchNoticeStatus,
   getLabel: getStatusLabel,
-} = useDict('common_status')
+} = useDict(DICT.COMMON_STATUS)
 const {
   items: noticeTypeItems,
   fetchDict: fetchNoticeType,
   getLabel: getTypeName,
-} = useDict('notice_type')
+} = useDict(DICT.NOTICE_TYPE)
 const {
   items: noticeImportanceItems,
   fetchDict: fetchNoticeImportance,
   getLabel: getImportanceName,
-} = useDict('notice_level')
+} = useDict(DICT.NOTICE_LEVEL)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -20,19 +21,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Edit, Trash2, ChevronLeft, List } from '@lucide/vue'
+import { Plus, Edit, Trash2, ChevronLeft, List, Download, Upload } from '@lucide/vue'
 import type { DictType, DictItem } from '@/types'
 import { dictApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const {
   fetchDict: fetchEnableStatus,
   items: enableStatusItems,
-  getLabel,
-} = useDict(() => 'common_status')
+} = useDict(() => DICT.COMMON_STATUS)
 
 const isListView = ref(true) // true: 字典类型列表, false: 字典项列表
 const loading = ref(false)
@@ -42,6 +43,66 @@ const searchName = ref('')
 const searchCode = ref('')
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
+
+// 字典导入导出
+const importing = ref(false)
+const exporting = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+function handleImportClick() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (!file.name.toLowerCase().endsWith('.json')) {
+    showError('请选择 .json 文件')
+    input.value = ''
+    return
+  }
+  const formData = new FormData()
+  formData.append('file', file)
+  importing.value = true
+  try {
+    const { data } = await dictApi.importDict(formData)
+    const stat = data.value
+    showSuccess(
+      `导入成功：新增类型 ${stat?.typeAdd ?? 0}、更新类型 ${stat?.typeUpdate ?? 0}、新增字典项 ${stat?.itemAdd ?? 0}、更新字典项 ${stat?.itemUpdate ?? 0}`,
+    )
+    if (isListView.value) fetchDictTypes()
+  } catch {
+    // useRequest 已统一处理错误提示，不重复弹窗
+  } finally {
+    importing.value = false
+    input.value = ''
+  }
+}
+
+async function handleExport() {
+  exporting.value = true
+  try {
+    const { data, error } = await dictApi.export()
+    if (error.value) {
+      showError('导出失败')
+      return
+    }
+    const blob = data.value
+    if (!blob) {
+      showError('导出失败')
+      return
+    }
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'dict.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
+  }
+}
 
 const searchStatus = ref<string>('__all__')
 const showDialog = ref(false)
@@ -64,6 +125,8 @@ const itemFormData = ref({
   value: '',
   sort: 0,
   status: '1',
+  className: '',
+  iconName: '',
   remark: '',
 })
 
@@ -223,6 +286,8 @@ function handleAddItem() {
     value: '',
     sort: 0,
     status: '1',
+    className: '',
+    iconName: '',
     remark: '',
   }
   showDialog.value = true
@@ -237,6 +302,8 @@ function handleEditItem(item: DictItem) {
     value: item.value,
     sort: item.sort || 0,
     status: String(item.status),
+    className: item.className || '',
+    iconName: item.iconName || '',
     remark: item.remark || '',
   }
   showDialog.value = true
@@ -285,7 +352,22 @@ async function handleSubmitItem() {
   <div class="p-6 space-y-4 animate-page-enter">
     <!-- 字典类型列表 -->
     <template v-if="isListView">
-      <div class="flex items-center justify-end">
+      <div class="flex items-center gap-2 justify-end">
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".json,application/json"
+          class="hidden"
+          @change="handleFileChange"
+        />
+        <Button variant="outline" :disabled="exporting" @click="handleExport">
+          <Download class="w-4 h-4 mr-2" />
+          导出字典
+        </Button>
+        <Button variant="outline" :disabled="importing" @click="handleImportClick">
+          <Upload class="w-4 h-4 mr-2" />
+          导入字典
+        </Button>
         <Button @click="handleAdd">
           <Plus class="w-4 h-4 mr-2" />
           新增字典
@@ -344,12 +426,7 @@ async function handleSubmitItem() {
               <TableCell>{{ dict.name }}</TableCell>
               <TableCell>{{ dict.code }}</TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="'bg-secondary text-secondary-foreground'"
-                >
-                  {{ getLabel(dict.status) }}
-                </span>
+                <StatusBadge :type="DICT.COMMON_STATUS" :value="dict.status" />
               </TableCell>
               <TableCell>{{ dict.remark || '-' }}</TableCell>
               <TableCell>
@@ -429,6 +506,8 @@ async function handleSubmitItem() {
               <TableHead>ID</TableHead>
               <TableHead>字典项标签</TableHead>
               <TableHead>字典项值</TableHead>
+              <TableHead>样式类</TableHead>
+              <TableHead>图标</TableHead>
               <TableHead>排序</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>备注</TableHead>
@@ -440,14 +519,24 @@ async function handleSubmitItem() {
               <TableCell>{{ item.id }}</TableCell>
               <TableCell>{{ item.label }}</TableCell>
               <TableCell>{{ item.value }}</TableCell>
+              <TableCell>
+                <div v-if="item.className" class="flex items-center gap-2">
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="item.className"
+                    >{{ item.label }}</span
+                  >
+                  <code class="text-xs text-muted-foreground">{{ item.className }}</code>
+                </div>
+                <span v-else class="text-muted-foreground">-</span>
+              </TableCell>
+              <TableCell>
+                <span class="text-sm" v-if="item.iconName">{{ item.iconName }}</span>
+                <span v-else class="text-muted-foreground">-</span>
+              </TableCell>
               <TableCell>{{ item.sort || 0 }}</TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="'bg-secondary text-secondary-foreground'"
-                >
-                  {{ getLabel(item.status) }}
-                </span>
+                <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
               </TableCell>
               <TableCell>{{ item.remark || '-' }}</TableCell>
               <TableCell>
@@ -462,7 +551,7 @@ async function handleSubmitItem() {
               </TableCell>
             </TableRow>
             <TableRow v-if="dictItems.length === 0">
-              <TableCell colspan="7" class="text-center text-muted-foreground py-8">
+              <TableCell colspan="9" class="text-center text-muted-foreground py-8">
                 暂无数据
               </TableCell>
             </TableRow>
@@ -557,6 +646,22 @@ async function handleSubmitItem() {
           <div class="space-y-2">
             <Label for="itemStatus">状态</Label>
             <DictSelect v-model="itemFormData.status" :dict-items="enableStatusItems" />
+          </div>
+          <div class="space-y-2 col-span-2">
+            <Label for="className">样式类</Label>
+            <Input
+              id="className"
+              v-model="itemFormData.className"
+              placeholder="Tailwind 样式类，如 bg-green-100 text-green-800，用于状态徽章配色"
+            />
+          </div>
+          <div class="space-y-2 col-span-2">
+            <Label for="iconName">图标名称</Label>
+            <Input
+              id="iconName"
+              v-model="itemFormData.iconName"
+              placeholder="图标名称，如 AlertCircle"
+            />
           </div>
           <div class="space-y-2 col-span-2">
             <Label for="itemRemark">备注</Label>

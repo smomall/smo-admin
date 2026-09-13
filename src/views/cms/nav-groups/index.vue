@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSiteStore } from '@/stores/site'
@@ -38,6 +39,7 @@ import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { usePagedList } from '@/composables/usePagedList'
 import { useDict } from '@/composables/useDict'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -58,8 +60,7 @@ const siteId = computed(() => (route.query.siteId as string) || siteStore.curren
 const {
   items: statusItems,
   fetchDict: fetchStatusDict,
-  getLabel: getStatusLabel,
-} = useDict('common_status')
+} = useDict(DICT.COMMON_STATUS)
 
 const searchName = ref('')
 
@@ -472,11 +473,7 @@ onMounted(() => {
             >
               {{ group.code }}
             </div>
-            <span
-              class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground shrink-0"
-            >
-              {{ getStatusLabel(group.status) }}
-            </span>
+            <StatusBadge :type="DICT.COMMON_STATUS" :value="group.status" />
             <div class="flex items-center gap-0.5 shrink-0">
               <Button
                 variant="ghost"
@@ -611,11 +608,7 @@ onMounted(() => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <span
-                    class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground"
-                  >
-                    {{ getStatusLabel(item.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
                 </TableCell>
                 <TableCell class="text-right">
                   <div class="inline-flex items-center gap-1">
@@ -825,9 +818,7 @@ onMounted(() => {
                   />
                 </span>
                 <span class="w-14 shrink-0 text-center">
-                  <span
-                    class="text-xs px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground"
-                    >{{ getStatusLabel(item.status) }}</span>
+                  <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
                 </span>
               </div>
               <div

@@ -82,9 +82,10 @@ const filteredBuckets = computed(() => {
   return buckets.value.filter(b => b.configId === configId.value)
 })
 
-// 监听配置变化，重置桶选择
-watch(configId, () => {
+// 监听配置变化，拉取该配置下的桶并重置桶选择
+watch(configId, (val) => {
   bucketName.value = '__default__'
+  if (val) fetchBuckets(val)
 })
 
 function handleClose(val: boolean) {
@@ -97,24 +98,25 @@ function handleClose(val: boolean) {
 watch(() => props.open, async (open) => {
   if (open) {
     await loadData()
-    configId.value = props.defaultConfigId || ''
+    configId.value = props.defaultConfigId || configs.value[0]?.id || ''
     bucketName.value = props.defaultBucketName || '__default__'
-    if (configId.value) {
-      const c = configs.value.find(x => x.id === configId.value)
-      configKey.value = c?.configKey || ''
-    }
+    const c = configs.value.find(x => x.id === configId.value)
+    configKey.value = c?.configKey || ''
   }
 })
 
 async function loadData() {
   if (!props.hideConfig) {
-    const [configRes, bucketRes] = await Promise.all([
-      ossClientConfigApi.getAll(),
-      ossBucketApi.getAll(),
-    ])
+    const configRes = await ossClientConfigApi.getAll()
     if (configRes.data.value) configs.value = configRes.data.value as unknown as OssClientConfig[]
-    if (bucketRes.data.value) buckets.value = bucketRes.data.value as unknown as OssBucket[]
+    const cid = props.defaultConfigId || configs.value[0]?.id || ''
+    if (cid) await fetchBuckets(cid)
   }
+}
+
+async function fetchBuckets(cid: string) {
+  const bucketRes = await ossBucketApi.getAll(cid)
+  if (bucketRes.data.value) buckets.value = bucketRes.data.value as unknown as OssBucket[]
 }
 
 function handleConfigChange(val: unknown) {

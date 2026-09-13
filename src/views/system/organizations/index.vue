@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -38,16 +39,9 @@ import OrganizationTree from '@/components/OrganizationTree.vue'
 import OrgTreeRow from '@/components/OrgTreeRow.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
 
-const { dict: enableStatusDict, fetchDict: fetchEnableStatus } = useDict(() => 'common_status')
+const { dict: enableStatusDict, fetchDict: fetchEnableStatus } = useDict(() => DICT.COMMON_STATUS)
 
 const enableStatusItems = computed(() => enableStatusDict.value?.items || [])
-
-function getLabel(value: string | number | undefined): string {
-  if (value === undefined || value === null) return '-'
-  const strValue = String(value)
-  const item = enableStatusItems.value.find((i) => i.value === strValue)
-  return item?.label || strValue
-}
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -329,7 +323,6 @@ async function handleSubmit() {
                 :org="org"
                 :level="0"
                 :expanded-ids="expandedIds"
-                :get-label="getLabel"
                 @toggle-expand="toggleExpand"
                 @add="handleAdd"
                 @edit="handleEdit"

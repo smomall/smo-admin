@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed, h, watch, type VNode } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -57,13 +58,14 @@ import DictSelect from '@/components/DictSelect.vue'
 import CoverInput from '@/components/CoverInput.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TablePagination from '@/components/TablePagination.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
 const siteStore = useSiteStore()
-const { items: noteStatusItems, getLabel: getStatusLabel } = useDict('publish_status')
-const { items: chapterStatusItems } = useDict('publish_status')
-const { items: contentTypeItems } = useDict('content_type')
+const { items: noteStatusItems, getLabel: getStatusLabel } = useDict(DICT.PUBLISH_STATUS)
+const { items: chapterStatusItems } = useDict(DICT.PUBLISH_STATUS)
+const { items: contentTypeItems } = useDict(DICT.CONTENT_TYPE)
 const route = useRoute()
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -839,12 +841,7 @@ onMounted(() => {
                   note.description || '-'
                 }}</TableCell>
                 <TableCell>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium"
-                    :class="'bg-secondary text-secondary-foreground'"
-                  >
-                    {{ getStatusLabel(note.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.PUBLISH_STATUS" :value="note.status" />
                 </TableCell>
                 <TableCell class="text-sm text-muted-foreground">
                   {{ note.publishAt ? formatDateTime(note.publishAt) : '-' }}

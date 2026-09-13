@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref } from 'vue'
 import { formatDateTime } from '@/lib/utils'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -38,8 +39,9 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TablePagination from '@/components/TablePagination.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 
-const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
+const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -252,11 +254,7 @@ async function handleSubmit() {
               {{ model.baseUrl }}
             </TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
-              >
-                {{ getStatusLabel(String(model.status)) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="model.status" />
             </TableCell>
             <TableCell class="text-sm text-muted-foreground">
               {{ model.createdAt ? formatDateTime(model.createdAt) : '-' }}

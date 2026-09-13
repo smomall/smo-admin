@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -33,11 +34,12 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
 import CoverInput from '@/components/CoverInput.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TablePagination from '@/components/TablePagination.vue'
 
 const siteStore = useSiteStore()
 
-const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
+const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
 
 const route = useRoute()
 const { showError, showSuccess } = useMessageDialog()
@@ -236,12 +238,7 @@ function handleCoverUploaded(payload: { fileId: string; fileUrl: string }) {
             </TableCell>
             <TableCell>{{ tag.articleCount }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getStatusLabel(tag.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="tag.status" />
             </TableCell>
             <TableCell>{{ tag.sort }}</TableCell>
             <TableCell class="text-sm text-muted-foreground">

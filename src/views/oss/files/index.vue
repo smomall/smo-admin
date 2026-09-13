@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed, watch, onMounted } from 'vue'
 import { formatDateTime } from '@/lib/utils'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -49,9 +50,10 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
 import OssUploader from '@/components/OssUploader.vue'
 import TablePagination from '@/components/TablePagination.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: enableStatusItems, getLabel: getStatusLabel } = useDict('common_status')
+const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
 
 const { showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -62,7 +64,7 @@ const searchFileExt = ref('')
 const searchFileType = ref('')
 const searchFileSubType = ref('')
 const searchBucketId = ref('__all__')
-const searchConfigId = ref('__all__')
+const searchConfigId = ref('')
 const showAdvancedSearch = ref(false)
 const showDialog = ref(false)
 const isEdit = ref(false)
@@ -72,14 +74,12 @@ const showUploadDialog = ref(false)
 const configs = ref<OssClientConfig[]>([])
 const buckets = ref<OssBucket[]>([])
 
-// 根据搜索配置ID联动过滤桶
-const searchFilteredBuckets = computed(() => {
-  if (searchConfigId.value === '__all__') return buckets.value
-  return buckets.value.filter((b) => b.configId === searchConfigId.value)
-})
+// 桶列表已按当前配置拉取，直接使用
+const searchFilteredBuckets = computed(() => buckets.value)
 
-watch(searchConfigId, () => {
+watch(searchConfigId, (val) => {
   searchBucketId.value = '__all__'
+  if (val) fetchBuckets(val)
 })
 
 const formData = ref({
@@ -118,7 +118,7 @@ const {
     fileType: searchFileType.value,
     fileSubType: searchFileSubType.value,
     bucketId: searchBucketId.value === '__all__' ? '' : searchBucketId.value,
-    configId: searchConfigId.value === '__all__' ? '' : searchConfigId.value,
+    configId: searchConfigId.value,
   }),
 })
 
@@ -129,23 +129,26 @@ function handleReset() {
   searchFileType.value = ''
   searchFileSubType.value = ''
   searchBucketId.value = '__all__'
-  searchConfigId.value = '__all__'
+  searchConfigId.value = configs.value[0]?.id || ''
   handleSearch()
 }
 
-// 获取配置和桶
+// 获取配置
 async function fetchConfigs() {
   try {
     const { data } = await ossClientConfigApi.getAll()
-    if (data.value) configs.value = data.value
+    if (data.value && data.value.length > 0) {
+      configs.value = data.value
+      searchConfigId.value = data.value[0]!.id
+    }
   } catch {
     // useRequest 已统一处理错误提示
   }
 }
 
-async function fetchBuckets() {
+async function fetchBuckets(configId: string) {
   try {
-    const { data } = await ossBucketApi.getAll()
+    const { data } = await ossBucketApi.getAll(configId)
     if (data.value) buckets.value = data.value
   } catch {
     // useRequest 已统一处理错误提示
@@ -171,7 +174,7 @@ function formatFileSize(bytes: number | undefined): string {
 }
 
 onMounted(() => {
-  Promise.all([fetchConfigs(), fetchBuckets()])
+  fetchConfigs()
 })
 
 function handleAdd() {
@@ -322,10 +325,9 @@ function copyUrl(url: string | undefined) {
           </div>
           <Select v-model="searchConfigId" class="w-36">
             <SelectTrigger>
-              <SelectValue placeholder="全部配置" />
+              <SelectValue placeholder="选择配置" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">全部配置</SelectItem>
               <SelectItem v-for="c in configs" :key="c.id" :value="c.id">{{
                 c.configName
               }}</SelectItem>
@@ -468,12 +470,7 @@ function copyUrl(url: string | undefined) {
               </span>
             </TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getStatusLabel(file.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="file.status" />
             </TableCell>
             <TableCell class="text-sm text-muted-foreground whitespace-nowrap">
               {{ file.createdAt ? formatDateTime(file.createdAt) : '-' }}

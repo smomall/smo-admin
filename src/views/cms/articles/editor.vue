@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessageDialog } from '@/composables/useMessageDialog'
@@ -33,7 +34,7 @@ import { useSiteStore } from '@/stores/site'
 import CoverInput from '@/components/CoverInput.vue'
 import DictSelect from '@/components/DictSelect.vue'
 
-const { dict: articleStatusDict, fetchDict: fetchArticleStatus } = useDict(() => 'publish_status')
+const { dict: articleStatusDict, fetchDict: fetchArticleStatus } = useDict(() => DICT.PUBLISH_STATUS)
 
 const articleStatusItems = computed(() => articleStatusDict.value?.items || [])
 

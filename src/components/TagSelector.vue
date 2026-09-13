@@ -27,9 +27,11 @@ const selectedTags = computed(() => props.modelValue)
 const canAddMore = computed(() => selectedTags.value.length < MAX_TAGS)
 
 async function fetchTags() {
+  const siteId = props.siteId
+  if (!siteId) return
   loading.value = true
   try {
-    const { data } = await tagApi.getAll(props.siteId)
+    const { data } = await tagApi.getAll(siteId)
     if (data.value) {
       allTags.value = data.value
     }

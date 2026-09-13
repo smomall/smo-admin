@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -50,13 +51,13 @@ import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
 import TablePagination from '@/components/TablePagination.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: enableStatusItems, getLabel } = useDict('common_status')
-const { getLabel: getRoleTypeLabel } = useDict('role_type')
-const { getLabel: getModuleLabel } = useDict('permission_module')
-const { getLabel: getFunctionLabel } = useDict('permission_function')
-const { getLabel: getHttpMethodLabel } = useDict('http_method')
+const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
+const { getLabel: getRoleTypeLabel } = useDict(DICT.ROLE_TYPE)
+const { getLabel: getModuleLabel } = useDict(DICT.PERMISSION_MODULE)
+const { getLabel: getFunctionLabel } = useDict(DICT.PERMISSION_FUNCTION)
 
 const DataScopeEnum = [
   { value: '0', label: '没有数据权限' },
@@ -630,12 +631,7 @@ async function handleSavePermissions() {
             <TableCell>{{ getDataScopeLabel(role.dataScope ?? 0) }}</TableCell>
             <TableCell>{{ role.description || '-' }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="'bg-secondary text-secondary-foreground'"
-              >
-                {{ getLabel(role.status) }}
-              </span>
+              <StatusBadge :type="DICT.COMMON_STATUS" :value="role.status" />
             </TableCell>
             <TableCell>
               <span
@@ -853,21 +849,10 @@ async function handleSavePermissions() {
                     <TableCell class="font-medium">{{ item.name }}</TableCell>
                     <TableCell class="text-sm text-muted-foreground">{{ item.code }}</TableCell>
                     <TableCell class="w-24">
-                      <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700">{{
-                        getHttpMethodLabel(item.httpMethod) || item.httpMethod || '-'
-                      }}</span>
+                      <StatusBadge :type="DICT.HTTP_METHOD" :value="item.httpMethod" />
                     </TableCell>
                     <TableCell class="w-20">
-                      <span
-                        class="px-2 py-0.5 rounded text-xs"
-                        :class="
-                          item.status === '1'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        "
-                      >
-                        {{ item.status === '1' ? '启用' : '禁用' }}
-                      </span>
+                      <StatusBadge :type="DICT.COMMON_STATUS" :value="item.status" />
                     </TableCell>
                     <TableCell class="text-sm text-muted-foreground">{{
                       item.resourcePath || '-'

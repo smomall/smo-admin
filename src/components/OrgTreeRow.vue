@@ -3,14 +3,15 @@ import { computed } from 'vue'
 import { ChevronRight, ChevronDown, Building2, Plus, Edit, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { TableRow, TableCell } from '@/components/ui/table'
+import StatusBadge from '@/components/StatusBadge.vue'
 import TreeGuides from './TreeGuides.vue'
 import type { Organization } from '@/types'
+import { DICT } from '@/constants/dict'
 
 const props = defineProps<{
   org: Organization
   level: number
   expandedIds: Set<string>
-  getLabel: (value: string | number | undefined) => string
 }>()
 
 const emit = defineEmits<{
@@ -49,12 +50,7 @@ const isExpanded = computed(() => props.expandedIds.has(props.org.id))
     <TableCell>{{ org.email || '-' }}</TableCell>
     <TableCell>{{ org.sort || 0 }}</TableCell>
     <TableCell>
-      <span
-        class="px-2 py-1 rounded-full text-xs font-medium"
-        :class="'bg-secondary text-secondary-foreground'"
-      >
-        {{ getLabel(org.status) }}
-      </span>
+      <StatusBadge :type="DICT.COMMON_STATUS" :value="org.status" />
     </TableCell>
     <TableCell>
       <div class="flex items-center gap-2">
@@ -77,7 +73,6 @@ const isExpanded = computed(() => props.expandedIds.has(props.org.id))
       :org="child"
       :level="level + 1"
       :expanded-ids="expandedIds"
-      :get-label="getLabel"
       @toggle-expand="emit('toggle-expand', $event)"
       @add="emit('add', $event)"
       @edit="emit('edit', $event)"

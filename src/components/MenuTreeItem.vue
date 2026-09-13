@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ChevronRight, Eye, EyeOff, Plus, Edit, Trash2, GripVertical, LayoutDashboard, Settings, Users, Shield, Key, Menu as MenuIcon } from '@lucide/vue'
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Button } from '@/components/ui/button'
@@ -7,7 +8,7 @@ import Sortable from 'sortablejs'
 import { useDict } from '@/composables/useDict'
 import TreeGuides from './TreeGuides.vue'
 
-const { getLabel: getTypeLabel } = useDict('menu_type')
+const { getLabel: getTypeLabel } = useDict(DICT.MENU_TYPE)
 
 const iconMap: Record<string, unknown> = {
   LayoutDashboard,

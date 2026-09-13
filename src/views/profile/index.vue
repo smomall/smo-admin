@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed } from 'vue'
 import {
   User,
@@ -38,8 +39,8 @@ const { showSuccess, showError } = useMessageDialog()
 const userId = computed(() => userStore.user?.id || '')
 
 // ============== 字典（与 users/index.vue 对齐）==============
-const { items: genderItems, fetchDict: fetchGender } = useDict('user_gender')
-const { items: localeItems, fetchDict: fetchLocale } = useDict('common_locale')
+const { items: genderItems, fetchDict: fetchGender } = useDict(DICT.USER_GENDER)
+const { items: localeItems, fetchDict: fetchLocale } = useDict(DICT.COMMON_LOCALE)
 
 // ============== 表单数据 ==============
 const activeTab = ref('basic')

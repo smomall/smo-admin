@@ -349,6 +349,21 @@ export const dictApi = {
   all: () => {
     return useRequest<Record<string, DictSelectResult>>('/dict/all').json()
   },
+
+  /** 上传字典 JSON 文件并导入（类型按 code、字典项按 dictTypeId+value 存在更新不存在新增） */
+  importDict: (formData: FormData) => {
+    return useRequest<{
+      typeAdd?: number
+      typeUpdate?: number
+      itemAdd?: number
+      itemUpdate?: number
+    }>('/dict/import', { method: 'POST', body: formData }).json()
+  },
+
+  /** 导出全部字典 JSON 文件下载 */
+  export: () => {
+    return useRequest('/dict/export').blob()
+  },
 }
 
 // ================================================

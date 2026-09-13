@@ -79,30 +79,14 @@ watch(
 </script>
 
 <template>
-  <div :class="props.class">
-    <div v-if="label" class="flex items-center gap-2">
-      <Label v-if="label" :for="id">{{ label }}</Label>
-      <Select :model-value="String(internalValue)" @update:model-value="(v) => (internalValue = v as string)" :disabled="disabled">
-        <SelectTrigger class="flex-1">
-          <template v-if="loading">
-            <Skeleton class="h-4 w-20 rounded" />
-          </template>
-          <template v-else>
-            <SelectValue :placeholder="displayLabel" />
-          </template>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="item in items"
-            :key="item.value"
-            :value="String(item.value)"
-          >
-            {{ item.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-    <Select v-else :model-value="String(internalValue)" @update:model-value="(v) => (internalValue = v as string)" :disabled="disabled">
+  <div :class="[props.class, label ? 'flex items-center gap-2' : '']">
+    <Label v-if="label" :for="id">{{ label }}</Label>
+    <Select
+      :model-value="String(internalValue)"
+      :class="label ? 'flex-1' : ''"
+      :disabled="disabled"
+      @update:model-value="(v) => (internalValue = v as string)"
+    >
       <SelectTrigger>
         <template v-if="loading">
           <Skeleton class="h-4 w-20 rounded" />

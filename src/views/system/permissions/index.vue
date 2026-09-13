@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, computed, onMounted } from 'vue'
 import { useMessageDialog } from '@/composables/useMessageDialog'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,7 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import { useDict } from '@/composables/useDict'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import PermissionTree from '@/components/PermissionTree.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
 import TablePagination from '@/components/TablePagination.vue'
@@ -42,11 +44,8 @@ import { usePagedList } from '@/composables/usePagedList'
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
 
-const { getLabel: getStatusLabel } = useDict('common_status')
-const { getLabel: getModuleLabel } = useDict('permission_module')
-const { getLabel: getFunctionLabel } = useDict('permission_function')
-const { getLabel: getHttpMethodLabel } = useDict('http_method')
-const { getLabel: getTypeLabel } = useDict('permission_type')
+const { getLabel: getModuleLabel } = useDict(DICT.PERMISSION_MODULE)
+const { getLabel: getFunctionLabel } = useDict(DICT.PERMISSION_FUNCTION)
 
 const allPermissions = ref<Permission[]>([])
 const showDialog = ref(false)
@@ -294,26 +293,19 @@ async function handleSubmit() {
                 <TableCell>{{ getModuleLabel(permission.moduleId) || '-' }}</TableCell>
                 <TableCell>{{ getFunctionLabel(permission.functionId) || '-' }}</TableCell>
                 <TableCell>
-                  <span class="px-2 py-0.5 rounded text-xs bg-secondary text-secondary-foreground">
-                    {{ getTypeLabel(String(permission.type)) || '-' }}
-                  </span>
+                  <StatusBadge :type="DICT.PERMISSION_TYPE" :value="permission.type" />
                 </TableCell>
                 <TableCell class="text-sm text-muted-foreground">{{
                   permission.sort ?? 0
                 }}</TableCell>
                 <TableCell>
-                  <span
-                    v-if="permission.httpMethod"
-                    class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                  >
-                    {{ getHttpMethodLabel(permission.httpMethod) || permission.httpMethod }}
-                  </span>
+                  <template v-if="permission.httpMethod">
+                    <StatusBadge :type="DICT.HTTP_METHOD" :value="permission.httpMethod" />
+                  </template>
                   <span v-else>-</span>
                 </TableCell>
                 <TableCell>
-                  <span class="px-2 py-0.5 rounded text-xs bg-secondary text-secondary-foreground">
-                    {{ getStatusLabel(permission.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.COMMON_STATUS" :value="permission.status" />
                 </TableCell>
                 <TableCell>
                   <div class="flex items-center gap-2">

@@ -44,9 +44,11 @@ const categoryTitleMap = computed(() => {
 })
 
 async function fetchCategories() {
+  const siteId = props.siteId
+  if (!siteId) return
   loading.value = true
   try {
-    const { data } = await categoryApi.tree(props.siteId)
+    const { data } = await categoryApi.tree(siteId)
     if (data.value) {
       categories.value = data.value
     }

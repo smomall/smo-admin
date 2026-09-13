@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DICT } from '@/constants/dict'
 import { ref, onMounted, computed, h, type VNode } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { formatDateTime } from '@/lib/utils'
@@ -36,6 +37,7 @@ import type { Page, PageModel } from '@/types'
 import { pageApi, pageModelApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { useTabStore } from '@/stores/tab'
 import { useSiteStore } from '@/stores/site'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
@@ -44,7 +46,7 @@ import TablePagination from '@/components/TablePagination.vue'
 import TreeGuides from '@/components/TreeGuides.vue'
 import { usePagedList } from '@/composables/usePagedList'
 
-const { items: pageStatusItems, getLabel: getStatusLabel } = useDict('publish_status')
+const { items: pageStatusItems } = useDict(DICT.PUBLISH_STATUS)
 
 function getModelLabel(modelId: string | undefined): string {
   if (!modelId) return '-'
@@ -509,27 +511,10 @@ async function handleDelete(id: string) {
                 </TableCell>
                 <TableCell>{{ getModelLabel(page.modelId) }}</TableCell>
                 <TableCell>
-                  <span
-                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600"
-                  >
-                    {{
-                      page.pageType === 'page'
-                        ? '单页'
-                        : page.pageType === 'list'
-                          ? '列表'
-                          : page.pageType === 'link'
-                            ? '链接'
-                            : page.pageType || '-'
-                    }}
-                  </span>
+                  <StatusBadge :type="DICT.PAGE_TYPE" :value="page.pageType" />
                 </TableCell>
                 <TableCell>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium"
-                    :class="'bg-secondary text-secondary-foreground'"
-                  >
-                    {{ getStatusLabel(page.status) }}
-                  </span>
+                  <StatusBadge :type="DICT.PUBLISH_STATUS" :value="page.status" />
                 </TableCell>
                 <TableCell class="text-sm text-muted-foreground">
                   {{ page.publishAt ? formatDateTime(page.publishAt) : '-' }}

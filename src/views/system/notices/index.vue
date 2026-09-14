@@ -32,6 +32,7 @@ import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import DictSelect from '@/components/DictSelect.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 
 const {
   items: noticeStatusItems,
@@ -41,7 +42,6 @@ const {
 const {
   items: noticeTypeItems,
   fetchDict: fetchNoticeType,
-  getLabel: getTypeName,
 } = useDict(DICT.NOTICE_TYPE)
 const {
   items: noticeImportanceItems,
@@ -261,16 +261,7 @@ async function handleSubmit() {
             <TableCell>{{ notice.id }}</TableCell>
             <TableCell class="max-w-xs truncate">{{ notice.title }}</TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="
-                  notice.type === '1'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-purple-100 text-purple-800'
-                "
-              >
-                {{ getTypeName(String(notice.type)) }}
-              </span>
+              <StatusBadge :type="DICT.NOTICE_TYPE" :value="notice.type" />
             </TableCell>
             <TableCell>
               <span

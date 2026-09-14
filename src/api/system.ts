@@ -430,6 +430,21 @@ export const configApi = {
   itemDelete: (configTypeId: string, id: string) => {
     return useRequest(`/config/items/${id}`, { method: 'DELETE' }).json()
   },
+
+  /** 上传配置 JSON 文件并导入（类型按 code、配置项按 configTypeId+key 存在更新不存在新增） */
+  importConfig: (formData: FormData) => {
+    return useRequest<{
+      typeAdd?: number
+      typeUpdate?: number
+      itemAdd?: number
+      itemUpdate?: number
+    }>('/config/import', { method: 'POST', body: formData }).json()
+  },
+
+  /** 导出全部配置 JSON 文件下载 */
+  export: () => {
+    return useRequest('/config/export').blob()
+  },
 }
 
 // ================================================

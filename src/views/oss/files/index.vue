@@ -34,15 +34,10 @@ import {
   Plus,
   Edit,
   Trash2,
-  File,
-  Image,
-  Film,
-  Music,
-  FileText,
-  Archive,
   Upload,
 } from '@lucide/vue'
 import type { OssFile, OssClientConfig, OssBucket } from '@/types'
+import { contentTypeToCategory, getFileTypeIcon, isImageFile } from '@/lib/contentType'
 import { ossFileApi, ossClientConfigApi, ossBucketApi } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
@@ -248,44 +243,6 @@ async function handleSubmit() {
   }
 }
 
-function getFileIcon(fileType: string | undefined) {
-  if (!fileType) return File
-  const type = fileType.toLowerCase()
-  if (type.startsWith('image')) return Image
-  if (type.startsWith('video')) return Film
-  if (type.startsWith('audio')) return Music
-  if (type.includes('text') || type.includes('markdown')) return FileText
-  if (type.includes('zip') || type.includes('rar') || type.includes('tar')) return Archive
-  return File
-}
-
-// 判断是否为图片类型
-function isImageFile(file: OssFile): boolean {
-  return !!(file.fileType && file.fileType.toLowerCase().startsWith('image'))
-}
-
-function getFileTypeName(contentType: string | undefined): string {
-  if (!contentType) return '-'
-  if (contentType.startsWith('image/')) return '图片'
-  if (contentType.startsWith('video/')) return '视频'
-  if (contentType.startsWith('audio/')) return '音频'
-  if (contentType.includes('text')) return '文本'
-  if (contentType.includes('zip') || contentType.includes('rar')) return '压缩包'
-  if (contentType.includes('pdf')) return 'PDF'
-  if (contentType.includes('json') || contentType.includes('xml')) return '数据'
-  return contentType.split('/')[1] || '-'
-}
-
-function getFileTypeBadgeClass(contentType: string | undefined): string {
-  if (!contentType) return 'bg-gray-100 text-gray-800'
-  if (contentType.startsWith('image/')) return 'bg-pink-100 text-pink-800'
-  if (contentType.startsWith('video/')) return 'bg-purple-100 text-purple-800'
-  if (contentType.startsWith('audio/')) return 'bg-indigo-100 text-indigo-800'
-  if (contentType.includes('text')) return 'bg-orange-100 text-orange-800'
-  if (contentType.includes('zip') || contentType.includes('rar')) return 'bg-cyan-100 text-cyan-800'
-  return 'bg-blue-100 text-blue-800'
-}
-
 function copyUrl(url: string | undefined) {
   if (!url) return
   navigator.clipboard.writeText(url)
@@ -420,7 +377,7 @@ function copyUrl(url: string | undefined) {
             <!-- 预览 -->
             <TableCell>
               <div
-                v-if="isImageFile(file) && file.fileUrl"
+                v-if="isImageFile(file.fileType) && file.fileUrl"
                 class="w-10 h-10 rounded overflow-hidden bg-muted"
               >
                 <img
@@ -432,7 +389,7 @@ function copyUrl(url: string | undefined) {
               </div>
               <component
                 v-else
-                :is="getFileIcon(file.fileType)"
+                :is="getFileTypeIcon(file.fileType)"
                 class="w-8 h-8 text-muted-foreground"
               />
             </TableCell>
@@ -462,12 +419,10 @@ function copyUrl(url: string | undefined) {
               {{ formatFileSize(file.fileSize) }}
             </TableCell>
             <TableCell>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                :class="getFileTypeBadgeClass(file.contentType)"
-              >
-                {{ getFileTypeName(file.contentType) }}
-              </span>
+              <StatusBadge
+                :type="DICT.OSS_FILE_TYPE"
+                :value="contentTypeToCategory(file.contentType)"
+              />
             </TableCell>
             <TableCell>
               <StatusBadge :type="DICT.COMMON_STATUS" :value="file.status" />

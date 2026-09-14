@@ -43,25 +43,7 @@ import TablePagination from '@/components/TablePagination.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 
 const { items: enableStatusItems, getLabel: getStatusLabel } = useDict(DICT.COMMON_STATUS)
-
-const policyOptions = [
-  { label: '私有', value: '0' },
-  { label: '公开读', value: '1' },
-  { label: '公开读写', value: '2' },
-]
-
-function getPolicyLabel(policy: number | string | undefined): string {
-  const item = policyOptions.find((o) => o.value === String(policy))
-  return item ? item.label : '-'
-}
-
-function getPolicyBadgeClass(policy: number | string | undefined): string {
-  const p = String(policy)
-  if (p === '0') return 'bg-gray-100 text-gray-800'
-  if (p === '1') return 'bg-green-100 text-green-800'
-  if (p === '2') return 'bg-orange-100 text-orange-800'
-  return 'bg-gray-100 text-gray-800'
-}
+const { items: policyItems } = useDict(DICT.OSS_BUCKET_POLICY)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -415,12 +397,7 @@ async function handleSubmit() {
                 </TableCell>
                 <TableCell class="max-w-[200px] truncate">{{ bucket.basePath || '-' }}</TableCell>
                 <TableCell>
-                  <span
-                    class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                    :class="getPolicyBadgeClass(bucket.policy)"
-                  >
-                    {{ getPolicyLabel(bucket.policy) }}
-                  </span>
+                  <StatusBadge :type="DICT.OSS_BUCKET_POLICY" :value="bucket.policy" />
                 </TableCell>
                 <TableCell>
                   <Checkbox :model-value="bucket.isDefault" disabled />
@@ -494,7 +471,7 @@ async function handleSubmit() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
-                  v-for="opt in policyOptions"
+                  v-for="opt in policyItems"
                   :key="opt.value"
                   :value="opt.value"
                 >

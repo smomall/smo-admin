@@ -58,20 +58,7 @@ const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
 const { getLabel: getRoleTypeLabel } = useDict(DICT.ROLE_TYPE)
 const { getLabel: getModuleLabel } = useDict(DICT.PERMISSION_MODULE)
 const { getLabel: getFunctionLabel } = useDict(DICT.PERMISSION_FUNCTION)
-
-const DataScopeEnum = [
-  { value: '0', label: '没有数据权限' },
-  { value: '1', label: '全部数据权限' },
-  { value: '2', label: '自定义部门数据权限' },
-  { value: '3', label: '本部门及以下数据权限' },
-  { value: '4', label: '本部门数据权限' },
-  { value: '5', label: '仅本人数据权限' },
-]
-
-function getDataScopeLabel(value: string | number) {
-  const strValue = String(value)
-  return DataScopeEnum.find((item) => item.value === strValue)?.label || String(value)
-}
+const { items: dataScopeItems, getLabel: getDataScopeLabel } = useDict(DICT.DATA_SCOPE)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -719,7 +706,7 @@ async function handleSavePermissions() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="item in DataScopeEnum" :key="item.value" :value="item.value">
+                <SelectItem v-for="item in dataScopeItems" :key="item.value" :value="item.value">
                   {{ item.label }}
                 </SelectItem>
               </SelectContent>

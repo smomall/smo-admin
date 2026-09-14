@@ -43,22 +43,11 @@ import { usePagedList } from '@/composables/usePagedList'
 import { useRouter } from 'vue-router'
 
 const { items: enableStatusItems } = useDict(DICT.COMMON_STATUS)
+const { items: triggerTypeItems, getLabel: getTriggerTypeLabel } = useDict(DICT.JOB_TRIGGER_TYPE)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
 const router = useRouter()
-
-// 触发器类型选项（与后端 JobServiceImpl 保持一致）
-const triggerTypes = [
-  { value: 'cron', label: 'Cron 表达式' },
-  { value: 'simple', label: '简单间隔' },
-  { value: 'daily_time', label: '每日时间段' },
-  { value: 'calendar', label: '日历周期' },
-]
-
-function getTriggerTypeLabel(value: string | undefined) {
-  return triggerTypes.find((t) => t.value === (value || '').toLowerCase())?.label || value || '-'
-}
 
 // misfire 策略选项（按触发器类型区分）
 const cronStrategies = [
@@ -428,7 +417,7 @@ async function handleSubmit() {
                 <SelectValue placeholder="选择触发类型" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="t in triggerTypes" :key="t.value" :value="t.value">
+                <SelectItem v-for="t in triggerTypeItems" :key="t.value" :value="t.value">
                   {{ t.label }}
                 </SelectItem>
               </SelectContent>

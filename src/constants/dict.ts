@@ -25,6 +25,7 @@ export const DICT = {
   PERMISSION_FUNCTION: 'permission_function',
   PERMISSION_TYPE: 'permission_type',
   HTTP_METHOD: 'http_method',
+  DATA_SCOPE: 'sys_data_scope',
 
   // ========== 菜单 ==========
   MENU_TYPE: 'menu_type',
@@ -54,12 +55,17 @@ export const DICT = {
   CMS_MODEL_TYPE: 'cms_model_type',
   CMS_FIELD_TYPE: 'cms_field_type',
   CMS_ADMIN_COMPONENT: 'cms_admin_component',
+  CMS_DDL_FIELD_STATUS: 'cms_ddl_field_status',
 
   // ========== CMS 导航 ==========
   OPEN_TARGET: 'open_target',
 
   // ========== CMS 任务 ==========
   JOB_STATUS: 'job_status',
+  JOB_TRIGGER_TYPE: 'job_trigger_type',
+
+  // ========== AI 会话 ==========
+  AI_SESSION_TYPE: 'ai_session_type',
 
   // ========== CMS 邮件 ==========
   EMAIL_PROTOCOL: 'email_protocol',
@@ -69,6 +75,8 @@ export const DICT = {
 
   // ========== OSS ==========
   OSS_UPLOAD_STATUS: 'oss_upload_status',
+  OSS_BUCKET_POLICY: 'oss_bucket_policy',
+  OSS_FILE_TYPE: 'oss_file_type',
 } as const
 
 export type DictTypeCode = (typeof DICT)[keyof typeof DICT]

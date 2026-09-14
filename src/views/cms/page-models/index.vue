@@ -33,12 +33,13 @@ import { Plus, Edit, Trash2, ChevronLeft, List, Database, Play, KeyRound, X } fr
 import type { PageModel, PageModelField, PageModelFieldIndex } from '@/types'
 import {
   DDL_FIELD_STATUS,
-  DDL_FIELD_STATUS_OPTIONS,
   DICT_TYPE,
   getCompatibleComponents,
 } from '@/constants/ddl'
+import { DICT } from '@/constants/dict'
 import { pageModelApi, pageModelFieldApi, pageModelFieldIndexApi } from '@/api'
 import { useDict } from '@/composables/useDict'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import DictSelect from '@/components/DictSelect.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -54,22 +55,8 @@ import { Textarea } from '@/components/ui/textarea'
 const { getLabel: getModelTypeLabel } = useDict(DICT_TYPE.MODEL_TYPE)
 const { getLabel: getFieldTypeLabel } = useDict(DICT_TYPE.FIELD_TYPE)
 const { items: componentItems, getLabel: getComponentLabel } = useDict(DICT_TYPE.COMPONENT)
-
-function getDdlStatusLabel(status: number | string | undefined): string {
-  if (status === undefined || status === null || status === '') return '-'
-  const code = Number(status)
-  if (Number.isNaN(code)) return '-'
-  const option = DDL_FIELD_STATUS_OPTIONS.find((o) => o.value === code)
-  return option?.label || String(status)
-}
-
-function getDdlStatusClass(status: number | string | undefined): string {
-  if (status === undefined || status === null || status === '') return ''
-  const code = Number(status)
-  if (Number.isNaN(code)) return ''
-  const option = DDL_FIELD_STATUS_OPTIONS.find((o) => o.value === code)
-  return option?.color || ''
-}
+const { items: ddlStatusItems } = useDict(DICT.CMS_DDL_FIELD_STATUS)
+const { getLabel: getIndexTypeLabel } = useDict(DICT_TYPE.INDEX_TYPE)
 
 const compatibleComponents = computed(() =>
   getCompatibleComponents(fieldFormData.value.fieldType, componentItems.value),
@@ -950,15 +937,6 @@ async function handleExecuteIndexDdl() {
   }
 }
 
-function indexTypeBadgeClass(type?: string): string {
-  if (type === 'UNIQUE') return 'bg-blue-100 text-blue-700 border-blue-200'
-  return 'bg-slate-100 text-slate-700 border-slate-200'
-}
-function indexTypeLabel(type?: string): string {
-  if (type === 'UNIQUE') return '唯一索引'
-  if (type === 'NORMAL') return '普通索引'
-  return type || '普通索引'
-}
 </script>
 
 <template>
@@ -1002,7 +980,7 @@ function indexTypeLabel(type?: string): string {
             <SelectContent>
               <SelectItem value="__all__">全部</SelectItem>
               <SelectItem
-                v-for="opt in DDL_FIELD_STATUS_OPTIONS"
+                v-for="opt in ddlStatusItems"
                 :key="opt.value"
                 :value="String(opt.value)"
               >
@@ -1072,12 +1050,7 @@ function indexTypeLabel(type?: string): string {
                 </div>
               </TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="getDdlStatusClass(model.status)"
-                >
-                  {{ getDdlStatusLabel(model.status) }}
-                </span>
+                <StatusBadge :type="DICT.CMS_DDL_FIELD_STATUS" :value="model.status" />
               </TableCell>
               <TableCell>{{ model.remark || '-' }}</TableCell>
               <TableCell>
@@ -1243,12 +1216,7 @@ function indexTypeLabel(type?: string): string {
               </TableCell>
               <TableCell>{{ field.sort || 0 }}</TableCell>
               <TableCell>
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-medium"
-                  :class="getDdlStatusClass(field.status)"
-                >
-                  {{ getDdlStatusLabel(field.status) }}
-                </span>
+                <StatusBadge :type="DICT.CMS_DDL_FIELD_STATUS" :value="field.status" />
               </TableCell>
               <TableCell>
                 <div class="flex items-center gap-2">
@@ -1508,11 +1476,8 @@ function indexTypeLabel(type?: string): string {
           </div>
           <div class="space-y-2">
             <Label>DDL 状态</Label>
-            <div
-              class="px-3 py-2 rounded-md text-sm font-medium border"
-              :class="getDdlStatusClass(fieldFormData.status)"
-            >
-              {{ getDdlStatusLabel(fieldFormData.status) }}
+            <div class="flex items-center gap-1">
+              <StatusBadge :type="DICT.CMS_DDL_FIELD_STATUS" :value="fieldFormData.status" />
               <span class="text-xs text-muted-foreground ml-2">（系统自动管理）</span>
             </div>
           </div>
@@ -1698,26 +1663,17 @@ function indexTypeLabel(type?: string): string {
               <TableRow v-for="index in indexList" :key="index.id">
                 <TableCell class="font-medium">{{ index.indexName }}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    class="border rounded-full px-2 py-0.5"
-                    :class="indexTypeBadgeClass(index.indexType)"
-                  >
-                    {{ indexTypeLabel(index.indexType) }}
-                  </Badge>
+                  <StatusBadge :type="DICT_TYPE.INDEX_TYPE" :value="index.indexType" />
                 </TableCell>
                 <TableCell class="text-muted-foreground">
                   {{ describeIndexFields(index) }}
                 </TableCell>
                 <TableCell class="text-center">
-                  <Badge
+                  <StatusBadge
                     v-if="index.status !== undefined"
-                    variant="outline"
-                    class="rounded-full px-2 py-0.5 text-xs"
-                    :class="getDdlStatusClass(index.status)"
-                  >
-                    {{ getDdlStatusLabel(index.status) }}
-                  </Badge>
+                    :type="DICT.CMS_DDL_FIELD_STATUS"
+                    :value="index.status"
+                  />
                 </TableCell>
                 <TableCell>
                   <div class="flex items-center justify-end gap-1">
@@ -1835,13 +1791,7 @@ function indexTypeLabel(type?: string): string {
                         <Badge variant="outline" class="text-[10px] px-1.5 py-0 h-4">{{ field.fieldType }}</Badge>
                       </TableCell>
                       <TableCell class="text-center">
-                        <Badge
-                          variant="outline"
-                          class="rounded-full px-1.5 py-0 text-[10px]"
-                          :class="getDdlStatusClass(field.status)"
-                        >
-                          {{ getDdlStatusLabel(field.status) }}
-                        </Badge>
+                        <StatusBadge :type="DICT.CMS_DDL_FIELD_STATUS" :value="field.status" />
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1873,7 +1823,7 @@ function indexTypeLabel(type?: string): string {
           <DialogTitle>
             索引 DDL
             <span v-if="currentDdlIndex?.indexName" class="text-muted-foreground text-sm ml-2">
-              「{{ currentDdlIndex.indexName }}」 · {{ indexTypeLabel(currentDdlIndex.indexType) }}
+              「{{ currentDdlIndex.indexName }}」 · {{ getIndexTypeLabel(currentDdlIndex.indexType) }}
             </span>
           </DialogTitle>
           <DialogDescription>预览生成的 DDL，点击执行后会在数据库中立即执行。</DialogDescription>
@@ -1882,14 +1832,12 @@ function indexTypeLabel(type?: string): string {
           <TabsList class="mb-2">
             <TabsTrigger value="create">
               创建索引
-              <Badge
+              <StatusBadge
                 v-if="currentDdlIndex?.status !== undefined"
-                variant="outline"
-                class="ml-2 rounded-full px-1.5 py-0 text-[10px]"
-                :class="getDdlStatusClass(currentDdlIndex.status)"
-              >
-                {{ getDdlStatusLabel(currentDdlIndex.status) }}
-              </Badge>
+                class="ml-2"
+                :type="DICT.CMS_DDL_FIELD_STATUS"
+                :value="currentDdlIndex.status"
+              />
             </TabsTrigger>
             <TabsTrigger value="drop">删除索引</TabsTrigger>
           </TabsList>

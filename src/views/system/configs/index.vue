@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Edit, Trash2, ChevronLeft, List } from '@lucide/vue'
+import { Plus, Edit, Trash2, ChevronLeft, List, Download, Upload } from '@lucide/vue'
 import type { ConfigType, ConfigItem } from '@/types'
 import { configApi } from '@/api'
 import { useDict } from '@/composables/useDict'
@@ -44,6 +44,66 @@ const searchName = ref('')
 const searchCode = ref('')
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
+
+// 配置导入导出
+const importing = ref(false)
+const exporting = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+function handleImportClick() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (!file.name.toLowerCase().endsWith('.json')) {
+    showError('请选择 .json 文件')
+    input.value = ''
+    return
+  }
+  const formData = new FormData()
+  formData.append('file', file)
+  importing.value = true
+  try {
+    const { data } = await configApi.importConfig(formData)
+    const stat = data.value
+    showSuccess(
+      `导入成功：新增类型 ${stat?.typeAdd ?? 0}、更新类型 ${stat?.typeUpdate ?? 0}、新增配置项 ${stat?.itemAdd ?? 0}、更新配置项 ${stat?.itemUpdate ?? 0}`,
+    )
+    if (isListView.value) fetchConfigTypes()
+  } catch {
+    // useRequest 已统一处理错误提示，不重复弹窗
+  } finally {
+    importing.value = false
+    input.value = ''
+  }
+}
+
+async function handleExport() {
+  exporting.value = true
+  try {
+    const { data, error } = await configApi.export()
+    if (error.value) {
+      showError('导出失败')
+      return
+    }
+    const blob = data.value
+    if (!blob) {
+      showError('导出失败')
+      return
+    }
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'config.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  } finally {
+    exporting.value = false
+  }
+}
 
 const searchStatus = ref<string>('__all__')
 const showDialog = ref(false)
@@ -295,7 +355,22 @@ async function handleSubmitItem() {
 <template>
   <div class="p-6 space-y-4 animate-page-enter">
     <template v-if="isListView">
-      <div class="flex items-center justify-end">
+      <div class="flex items-center justify-end gap-2">
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".json,application/json"
+          class="hidden"
+          @change="handleFileChange"
+        />
+        <Button variant="outline" :disabled="exporting" @click="handleExport">
+          <Download class="w-4 h-4 mr-2" />
+          导出配置
+        </Button>
+        <Button variant="outline" :disabled="importing" @click="handleImportClick">
+          <Upload class="w-4 h-4 mr-2" />
+          导入配置
+        </Button>
         <Button @click="handleAdd">
           <Plus class="w-4 h-4 mr-2" />
           新增参数

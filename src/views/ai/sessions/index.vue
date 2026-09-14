@@ -35,6 +35,10 @@ import { usePagedList } from '@/composables/usePagedList'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TablePagination from '@/components/TablePagination.vue'
+import { useDict } from '@/composables/useDict'
+import { DICT } from '@/constants/dict'
+
+const { items: sessionTypeItems, getLabel: getTypeLabel } = useDict(DICT.AI_SESSION_TYPE)
 
 const { showError, showSuccess } = useMessageDialog()
 const { confirm } = useConfirmDialog()
@@ -46,11 +50,6 @@ const isEdit = ref(false)
 const showMessagesDialog = ref(false)
 const currentMessages = ref<ChatMessage[]>([])
 const currentSessionTitle = ref('')
-
-const sessionTypeOptions = [
-  { value: 'agent', label: '智能体' },
-  { value: 'assistant', label: '助手' },
-]
 
 const {
   list: sessions,
@@ -156,10 +155,6 @@ async function handleViewMessages(session: ChatSession) {
     // useRequest 已统一处理错误提示
   }
 }
-
-function getTypeLabel(type: string | undefined) {
-  return sessionTypeOptions.find((t) => t.value === type)?.label || type || '-'
-}
 </script>
 
 <template>
@@ -185,9 +180,9 @@ function getTypeLabel(type: string | undefined) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">全部类型</SelectItem>
-            <SelectItem v-for="opt in sessionTypeOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </SelectItem>
+            <SelectItem v-for="opt in sessionTypeItems" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </SelectItem>
           </SelectContent>
         </Select>
         <Button variant="outline" @click="handleSearch">搜索</Button>
@@ -292,7 +287,7 @@ function getTypeLabel(type: string | undefined) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="opt in sessionTypeOptions" :key="opt.value" :value="opt.value">
+                <SelectItem v-for="opt in sessionTypeItems" :key="opt.value" :value="opt.value">
                   {{ opt.label }}
                 </SelectItem>
               </SelectContent>

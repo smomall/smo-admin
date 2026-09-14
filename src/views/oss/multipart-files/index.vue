@@ -25,14 +25,10 @@ import {
   Eye,
   Trash2,
   File,
-  Image,
-  Film,
-  Music,
-  FileText,
-  Archive,
 } from '@lucide/vue'
 import { ossMultipartFileApi } from '@/api'
 import type { OssMultipartFile } from '@/types'
+import { contentTypeToCategory, getFileTypeIcon } from '@/lib/contentType'
 import { useDict } from '@/composables/useDict'
 import { useConfirmDialog } from '@/composables/useConfirmDialog'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -81,39 +77,6 @@ function formatFileSize(bytes: number | undefined): string {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
   if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
-}
-
-function getFileIcon(contentType: string | undefined) {
-  if (!contentType) return File
-  const type = contentType.toLowerCase()
-  if (type.startsWith('image')) return Image
-  if (type.startsWith('video')) return Film
-  if (type.startsWith('audio')) return Music
-  if (type.includes('text') || type.includes('markdown')) return FileText
-  if (type.includes('zip') || type.includes('rar') || type.includes('tar')) return Archive
-  return File
-}
-
-function getFileTypeName(contentType: string | undefined): string {
-  if (!contentType) return '-'
-  if (contentType.startsWith('image/')) return '图片'
-  if (contentType.startsWith('video/')) return '视频'
-  if (contentType.startsWith('audio/')) return '音频'
-  if (contentType.includes('text')) return '文本'
-  if (contentType.includes('zip') || contentType.includes('rar')) return '压缩包'
-  if (contentType.includes('pdf')) return 'PDF'
-  if (contentType.includes('json') || contentType.includes('xml')) return '数据'
-  return contentType.split('/')[1] || '-'
-}
-
-function getFileTypeBadgeClass(contentType: string | undefined): string {
-  if (!contentType) return 'bg-gray-100 text-gray-800'
-  if (contentType.startsWith('image/')) return 'bg-pink-100 text-pink-800'
-  if (contentType.startsWith('video/')) return 'bg-purple-100 text-purple-800'
-  if (contentType.startsWith('audio/')) return 'bg-indigo-100 text-indigo-800'
-  if (contentType.includes('text')) return 'bg-orange-100 text-orange-800'
-  if (contentType.includes('zip') || contentType.includes('rar')) return 'bg-cyan-100 text-cyan-800'
-  return 'bg-blue-100 text-blue-800'
 }
 
 async function handleView(file: OssMultipartFile) {
@@ -198,7 +161,7 @@ onMounted(() => {
           <TableRow v-for="file in files" :key="file.id" class="hover:bg-muted/50">
             <TableCell>
               <component
-                :is="getFileIcon(file.contentType)"
+                :is="getFileTypeIcon(file.contentType)"
                 class="w-6 h-6 text-muted-foreground"
               />
             </TableCell>
@@ -323,12 +286,10 @@ onMounted(() => {
           <div class="space-y-1">
             <Label class="text-muted-foreground">内容类型</Label>
             <div>
-              <span
-                class="px-2 py-1 rounded-full text-xs font-medium"
-                :class="getFileTypeBadgeClass(detailData.contentType)"
-              >
-                {{ getFileTypeName(detailData.contentType) }}
-              </span>
+              <StatusBadge
+                :type="DICT.OSS_FILE_TYPE"
+                :value="contentTypeToCategory(detailData.contentType)"
+              />
             </div>
           </div>
           <div class="space-y-1">

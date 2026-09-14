@@ -9,19 +9,6 @@ export const DDL_FIELD_STATUS = {
 
 export type DdlFieldStatus = (typeof DDL_FIELD_STATUS)[keyof typeof DDL_FIELD_STATUS]
 
-export const DDL_FIELD_STATUS_OPTIONS: { value: DdlFieldStatus; label: string; color: string }[] = [
-  { value: DDL_FIELD_STATUS.PENDING_ADD, label: '待添加', color: 'bg-amber-100 text-amber-700' },
-  { value: DDL_FIELD_STATUS.ADDED, label: '已添加', color: 'bg-green-100 text-green-700' },
-  {
-    value: DDL_FIELD_STATUS.PENDING_MODIFY,
-    label: '待修改',
-    color: 'bg-orange-100 text-orange-700',
-  },
-  { value: DDL_FIELD_STATUS.MODIFIED, label: '已修改', color: 'bg-emerald-100 text-emerald-700' },
-  { value: DDL_FIELD_STATUS.PENDING_DELETE, label: '待删除', color: 'bg-red-100 text-red-700' },
-  { value: DDL_FIELD_STATUS.DELETED, label: '已删除', color: 'bg-gray-100 text-gray-500' },
-]
-
 // 字典类型编码
 export const DICT_TYPE = {
   MODEL_TYPE: 'cms_model_type',

@@ -718,6 +718,42 @@ export interface OssMultipartFile {
   remark?: string
   createdAt?: string
   updatedAt?: string
+  /** 音频信息 */
+  audioInfo?: OssMediaAudioInfo
+  /** 视频信息 */
+  videoInfo?: OssMediaVideoInfo
+  /** 媒体封装格式信息 */
+  format?: OssMediaFormat
+}
+
+export interface OssMediaAudioInfo {
+  codecName?: string
+  profile?: string
+  sampleRate?: string
+  channels?: number
+  duration?: string
+  bitRate?: string
+  nbFrames?: string
+}
+
+export interface OssMediaVideoInfo {
+  codecName?: string
+  profile?: string
+  width?: number
+  height?: number
+  pixFmt?: string
+  rFrameRate?: string
+  avgFrameRate?: string
+  duration?: string
+  bitRate?: string
+  nbFrames?: string
+}
+
+export interface OssMediaFormat {
+  formatName?: string
+  duration?: string
+  size?: string
+  bitRate?: string
 }
 
 export interface Relation {

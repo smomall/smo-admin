@@ -36,8 +36,8 @@ interface Props {
   description?: string
   /** 预选 OSS 配置 ID */
   defaultConfigId?: string
-  /** 预选存储桶名称 */
-  defaultBucketName?: string
+  /** 预选存储桶 ID */
+  defaultBucketId?: string
   /** 是否隐藏配置/桶选择（直接上传到默认配置） */
   hideConfig?: boolean
 }
@@ -49,7 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
   title: '上传文件',
   description: '选择文件上传到 OSS 对象存储',
   defaultConfigId: '',
-  defaultBucketName: '',
+  defaultBucketId: '',
   hideConfig: false,
 })
 
@@ -67,8 +67,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 const uploading = ref(false)
 
 const configId = ref('')
-const configKey = ref('')
-const bucketName = ref('__default__')
+const bucketId = ref('__default__')
 const configs = ref<OssClientConfig[]>([])
 const buckets = ref<OssBucket[]>([])
 
@@ -84,7 +83,7 @@ const filteredBuckets = computed(() => {
 
 // 监听配置变化，拉取该配置下的桶并重置桶选择
 watch(configId, (val) => {
-  bucketName.value = '__default__'
+  bucketId.value = '__default__'
   if (val) fetchBuckets(val)
 })
 
@@ -99,9 +98,7 @@ watch(() => props.open, async (open) => {
   if (open) {
     await loadData()
     configId.value = props.defaultConfigId || configs.value[0]?.id || ''
-    bucketName.value = props.defaultBucketName || '__default__'
-    const c = configs.value.find(x => x.id === configId.value)
-    configKey.value = c?.configKey || ''
+    bucketId.value = props.defaultBucketId || '__default__'
   }
 })
 
@@ -123,11 +120,8 @@ function handleConfigChange(val: unknown) {
   const strVal = String(val)
   if (strVal === '__default__') {
     configId.value = ''
-    configKey.value = ''
   } else {
     configId.value = strVal
-    const c = configs.value.find(x => x.id === strVal)
-    configKey.value = c?.configKey || ''
   }
 }
 
@@ -177,8 +171,8 @@ async function handleUpload() {
   try {
     const { data } = await ossUploadApi.upload(
       selectedFile.value,
-      configKey.value || undefined,
-      bucketName.value !== '__default__' ? bucketName.value : undefined,
+      configId.value ? Number(configId.value) : undefined,
+      bucketId.value !== '__default__' ? Number(bucketId.value) : undefined,
     )
     if (data.value) {
       showSuccess('文件上传成功')
@@ -296,13 +290,13 @@ onBeforeUnmount(() => {
           </div>
           <div class="space-y-2">
             <Label>存储桶</Label>
-            <Select v-model="bucketName" :disabled="uploading">
+            <Select v-model="bucketId" :disabled="uploading">
               <SelectTrigger>
                 <SelectValue placeholder="默认桶" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__default__">默认桶</SelectItem>
-                <SelectItem v-for="b in filteredBuckets" :key="b.id" :value="b.bucketName">{{ b.bucketName }}</SelectItem>
+                <SelectItem v-for="b in filteredBuckets" :key="b.id" :value="b.id">{{ b.bucketName }}</SelectItem>
               </SelectContent>
             </Select>
           </div>

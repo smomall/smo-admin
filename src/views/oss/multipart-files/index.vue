@@ -314,6 +314,114 @@ onMounted(() => {
             <Label class="text-muted-foreground">备注</Label>
             <div>{{ detailData.remark || '-' }}</div>
           </div>
+
+          <template v-if="detailData.audioInfo">
+            <div class="col-span-2 border-t pt-3">
+              <Label class="text-muted-foreground font-semibold">音频信息</Label>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">编码</Label>
+              <div>{{ detailData.audioInfo.codecName || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">规格</Label>
+              <div>{{ detailData.audioInfo.profile || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">采样率</Label>
+              <div>{{ detailData.audioInfo.sampleRate || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">声道数</Label>
+              <div>{{ detailData.audioInfo.channels ?? '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">时长</Label>
+              <div>{{ detailData.audioInfo.duration || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">码率</Label>
+              <div>{{ detailData.audioInfo.bitRate || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">帧数</Label>
+              <div>{{ detailData.audioInfo.nbFrames || '-' }}</div>
+            </div>
+          </template>
+
+          <template v-if="detailData.videoInfo">
+            <div class="col-span-2 border-t pt-3">
+              <Label class="text-muted-foreground font-semibold">视频信息</Label>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">编码</Label>
+              <div>{{ detailData.videoInfo.codecName || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">规格</Label>
+              <div>{{ detailData.videoInfo.profile || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">分辨率</Label>
+              <div>
+                <template v-if="detailData.videoInfo.width && detailData.videoInfo.height">
+                  {{ detailData.videoInfo.width }} × {{ detailData.videoInfo.height }}
+                </template>
+                <template v-else>-</template>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">像素格式</Label>
+              <div>{{ detailData.videoInfo.pixFmt || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">帧率</Label>
+              <div>
+                <template v-if="detailData.videoInfo.rFrameRate">
+                  {{ detailData.videoInfo.rFrameRate }}
+                </template>
+                <template v-else>-</template>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">平均帧率</Label>
+              <div>{{ detailData.videoInfo.avgFrameRate || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">时长</Label>
+              <div>{{ detailData.videoInfo.duration || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">码率</Label>
+              <div>{{ detailData.videoInfo.bitRate || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">帧数</Label>
+              <div>{{ detailData.videoInfo.nbFrames || '-' }}</div>
+            </div>
+          </template>
+
+          <template v-if="detailData.format">
+            <div class="col-span-2 border-t pt-3">
+              <Label class="text-muted-foreground font-semibold">封装格式信息</Label>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">格式名</Label>
+              <div>{{ detailData.format.formatName || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">时长</Label>
+              <div>{{ detailData.format.duration || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">大小</Label>
+              <div>{{ detailData.format.size || '-' }}</div>
+            </div>
+            <div class="space-y-1">
+              <Label class="text-muted-foreground">码率</Label>
+              <div>{{ detailData.format.bitRate || '-' }}</div>
+            </div>
+          </template>
         </div>
       </DialogContent>
     </Dialog>

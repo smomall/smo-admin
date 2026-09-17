@@ -464,12 +464,12 @@ export const presignedApi = {
 // OSS文件直接上传 API
 // ================================================
 export const ossUploadApi = {
-  // 直接上传文件到OSS
-  upload: (file: File, configKey?: string, bucketName?: string) => {
+  // 直接上传文件到OSS（configId/bucketId：配置ID/桶ID，缺省时使用默认配置与默认桶）
+  upload: (file: File, configId?: number, bucketId?: number) => {
     const formData = new FormData()
     formData.append('file', file)
-    if (configKey) formData.append('configKey', configKey)
-    if (bucketName) formData.append('bucketName', bucketName)
+    if (configId != null) formData.append('configId', String(configId))
+    if (bucketId != null) formData.append('bucketId', String(bucketId))
     // 大文件上传不做超时限制，timeout=0 表示无限等待
     return useRequest<OssFile>('/oss/upload', {
       method: 'POST',

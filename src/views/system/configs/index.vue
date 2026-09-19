@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Plus, Edit, Trash2, ChevronLeft, List, Download, Upload } from '@lucide/vue'
 import type { ConfigType, ConfigItem } from '@/types'
 import { configApi } from '@/api'
@@ -116,6 +117,7 @@ const formData = ref({
   name: '',
   code: '',
   status: '1',
+  builtin: false,
   remark: '',
 })
 
@@ -213,6 +215,7 @@ function handleAdd() {
     name: '',
     code: '',
     status: '1',
+    builtin: false,
     remark: '',
   }
   showDialog.value = true
@@ -225,6 +228,7 @@ function handleEdit(config: ConfigType) {
     name: config.name,
     code: config.code,
     status: String(config.status),
+    builtin: config.builtin || false,
     remark: config.remark || '',
   }
   showDialog.value = true
@@ -419,6 +423,7 @@ async function handleSubmitItem() {
               <TableHead>参数名称</TableHead>
               <TableHead>参数编码</TableHead>
               <TableHead>状态</TableHead>
+              <TableHead>是否内置</TableHead>
               <TableHead>备注</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
@@ -431,6 +436,15 @@ async function handleSubmitItem() {
               <TableCell>
                 <StatusBadge :type="DICT.COMMON_STATUS" :value="config.status" />
               </TableCell>
+              <TableCell>
+                <span
+                  v-if="config.builtin"
+                  class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                >
+                  是
+                </span>
+                <span v-else>-</span>
+              </TableCell>
               <TableCell>{{ config.remark || '-' }}</TableCell>
               <TableCell>
                 <div class="flex items-center gap-2">
@@ -442,17 +456,27 @@ async function handleSubmitItem() {
                   >
                     <List class="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" @click="handleEdit(config)">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :disabled="config.builtin"
+                    @click="handleEdit(config)"
+                  >
                     <Edit class="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" @click="handleDelete(config.id)">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :disabled="config.builtin"
+                    @click="handleDelete(config.id)"
+                  >
                     <Trash2 class="w-4 h-4" />
                   </Button>
                 </div>
               </TableCell>
             </TableRow>
             <TableRow v-if="configTypes.length === 0">
-              <TableCell colspan="6" class="text-center text-muted-foreground py-8">
+              <TableCell colspan="7" class="text-center text-muted-foreground py-8">
                 暂无数据
               </TableCell>
             </TableRow>
@@ -593,6 +617,11 @@ async function handleSubmitItem() {
           <div class="space-y-2">
             <Label for="status">状态</Label>
             <DictSelect v-model="formData.status" :dict-items="enableStatusItems" />
+          </div>
+          <div class="space-y-2">
+            <Label for="builtin">是否内置</Label>
+            <Switch id="builtin" v-model="formData.builtin" />
+            <p class="text-xs text-muted-foreground">勾选后该类型将不可编辑、删除</p>
           </div>
           <div class="space-y-2 col-span-2">
             <Label for="remark">备注</Label>

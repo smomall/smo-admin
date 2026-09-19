@@ -246,6 +246,8 @@ export interface ConfigType {
   name: string
   code: string
   status: string
+  /** 是否内置 内置不可删除修改 */
+  builtin?: boolean
   remark?: string
 }
 
